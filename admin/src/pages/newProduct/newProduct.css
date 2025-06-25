@@ -1,0 +1,50 @@
+.newProduct {
+  flex: 4;
+  margin: 20px 20px 0 20px;
+}
+
+.addProductTitle {
+  margin-left: 20px;
+}
+
+.addProductForm {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.addProductItem {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  padding: 20px;
+}
+
+.addProductItem > label {
+  color: gray;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.addProductItem > input {
+  padding: 10px;
+}
+
+.addProductItem > select {
+  padding: 10px;
+}
+
+.addProductButton {
+  margin-top: 40px;
+  padding: 10px;
+  margin-left: auto; /* Add this property to center the button */
+  margin-right: auto; /* Add this property to center the button */
+  border: none;
+  border-radius: 10px;
+  background-color: darkblue;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  width: 70px;
+}
