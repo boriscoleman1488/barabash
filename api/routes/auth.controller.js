@@ -8,7 +8,7 @@ const crypto = require('crypto');
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS && 
     process.env.EMAIL_USER !== 'your-email@gmail.com') {
-  transporter = nodemailer.createTransporter({
+  transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,
