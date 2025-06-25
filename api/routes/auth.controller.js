@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require("../models/User");
 const CryptoJS = require("crypto-js");
 const jwt = require("jsonwebtoken");
 
@@ -28,7 +28,7 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Create user - автоматично підтверджуємо email
+    // Create user - без підтвердження email
     const user = await User.create({
       username,
       email,
@@ -38,7 +38,6 @@ const registerUser = async (req, res) => {
       ).toString(),
       firstName,
       lastName,
-      isEmailVerified: true, // Автоматично підтверджуємо
       isActive: true
     });
 
@@ -50,8 +49,7 @@ const registerUser = async (req, res) => {
         username: user.username,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName,
-        isEmailVerified: user.isEmailVerified
+        lastName: user.lastName
       }
     });
   } catch (error) {
@@ -64,7 +62,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// Login user - без перевірки підтвердження email
+// Login user
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -137,22 +135,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Verify email - залишаємо для сумісності
-const verifyEmail = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Email підтвердження більше не потрібне"
-  });
-};
-
-// Resend verification email - залишаємо для сумісності
-const resendVerificationEmail = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Email підтвердження більше не потрібне"
-  });
-};
-
 // Forgot password - спрощена версія
 const forgotPassword = async (req, res) => {
   res.status(200).json({
@@ -171,8 +153,6 @@ const resetPassword = async (req, res) => {
 
 module.exports = {
   registerUser,
-  verifyEmail,
-  resendVerificationEmail,
   loginUser,
   forgotPassword,
   resetPassword
