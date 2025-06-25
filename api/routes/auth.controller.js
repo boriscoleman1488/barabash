@@ -7,7 +7,7 @@ const crypto = require('crypto');
 // Створюємо транспортер тільки якщо є правильні налаштування
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS && 
-    process.env.EMAIL_USER !== 'test@example.com') {
+    process.env.EMAIL_USER !== 'your-email@gmail.com') {
   transporter = nodemailer.createTransporter({
     service: 'gmail',
     auth: {
@@ -36,10 +36,39 @@ const sendVerificationEmail = async (email, token) => {
     to: email,
     subject: 'Підтвердження email - BestFlix',
     html: `
-      <h2>Підтвердження email</h2>
-      <p>Натисніть на посилання нижче для підтвердження вашого email:</p>
-      <a href="${verificationUrl}">Підтвердити email</a>
-      <p>Посилання дійсне протягом 24 годин.</p>
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0;">BestFlix</h1>
+        </div>
+        
+        <div style="background-color: #f8fafc; padding: 30px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #1e293b; margin-top: 0;">Підтвердження email адреси</h2>
+          
+          <p style="color: #475569; line-height: 1.6;">
+            Дякуємо за реєстрацію в BestFlix! Для завершення реєстрації, будь ласка, підтвердіть вашу email адресу.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationUrl}" 
+               style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">
+              Підтвердити email
+            </a>
+          </div>
+          
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 0;">
+            Якщо кнопка не працює, скопіюйте та вставте це посилання в ваш браузер:
+          </p>
+          <p style="color: #2563eb; font-size: 14px; word-break: break-all; margin-top: 5px;">
+            ${verificationUrl}
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+          
+          <p style="color: #64748b; font-size: 12px; margin: 0;">
+            Це посилання дійсне протягом 24 годин. Якщо ви не реєструвалися в BestFlix, просто проігноруйте цей лист.
+          </p>
+        </div>
+      </div>
     `
   };
 
@@ -60,10 +89,39 @@ const sendPasswordResetEmail = async (email, token) => {
     to: email,
     subject: 'Відновлення паролю - BestFlix',
     html: `
-      <h2>Відновлення паролю</h2>
-      <p>Натисніть на посилання нижче для відновлення паролю:</p>
-      <a href="${resetUrl}">Відновити пароль</a>
-      <p>Посилання дійсне протягом 1 години.</p>
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2563eb; margin: 0;">BestFlix</h1>
+        </div>
+        
+        <div style="background-color: #f8fafc; padding: 30px; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #1e293b; margin-top: 0;">Відновлення паролю</h2>
+          
+          <p style="color: #475569; line-height: 1.6;">
+            Ви запросили відновлення паролю для вашого акаунту BestFlix. Натисніть на кнопку нижче для створення нового паролю.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" 
+               style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">
+              Відновити пароль
+            </a>
+          </div>
+          
+          <p style="color: #64748b; font-size: 14px; margin-bottom: 0;">
+            Якщо кнопка не працює, скопіюйте та вставте це посилання в ваш браузер:
+          </p>
+          <p style="color: #dc2626; font-size: 14px; word-break: break-all; margin-top: 5px;">
+            ${resetUrl}
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+          
+          <p style="color: #64748b; font-size: 12px; margin: 0;">
+            Це посилання дійсне протягом 1 години. Якщо ви не запитували відновлення паролю, просто проігноруйте цей лист.
+          </p>
+        </div>
+      </div>
     `
   };
 
@@ -124,6 +182,8 @@ const registerUser = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         isEmailVerified: user.isEmailVerified
       }
     });
