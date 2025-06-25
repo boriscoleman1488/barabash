@@ -1,17 +1,42 @@
 import "./Login.scss";
-import { useContext } from "react"; // Add useEffect import
-import { useState } from "react";
-import { login } from "../../authContext/apiCalls";
+import { useContext, useState, useEffect } from "react";
+import { login, clearError } from "../../authContext/apiCalls";
 import { AuthContext } from "../../authContext/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { dispatch } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const { isFetching, error, dispatch } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        clearError(dispatch);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, dispatch]);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    login({ email, password }, dispatch);
+    
+    if (!email || !password) {
+      return;
+    }
+
+    const result = await login({ email, password, rememberMe }, dispatch);
+    
+    if (result.success) {
+      navigate("/");
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -21,32 +46,81 @@ export default function Login() {
           <img
             className="logo"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png"
-            alt=""
+            alt="BestFlix"
           />
         </div>
       </div>
       <div className="container">
-        <form>
-          <h1>Sign In</h1>
-          <input
-            type="email"
-            placeholder="Email or phone number"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="loginButton" onClick={handleLogin}>
-            Sign In
+        <form onSubmit={handleLogin}>
+          <h1>Вхід</h1>
+          
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+          
+          <div className="input-group">
+            <input
+              type="email"
+              placeholder="Email адреса"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isFetching}
+              required
+            />
+          </div>
+          
+          <div className="input-group password-group">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Пароль"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isFetching}
+              required
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={togglePasswordVisibility}
+              disabled={isFetching}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
+          
+          <div className="form-options">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isFetching}
+              />
+              <span className="checkmark"></span>
+              Запам'ятати мене
+            </label>
+            
+            <Link to="/forgot-password" className="forgot-link">
+              Забули пароль?
+            </Link>
+          </div>
+          
+          <button 
+            type="submit" 
+            className="loginButton"
+            disabled={isFetching || !email || !password}
+          >
+            {isFetching ? "Вхід..." : "Увійти"}
           </button>
+          
           <span>
-            New to Netflix? <b>Sign up now.</b>
+            Новий користувач? <Link to="/register"><b>Зареєструватися</b></Link>
           </span>
+          
           <small>
-            This page is protected by Google reCAPTCHA to ensure you're not a
-            bot. <b>Learn more</b>.
+            Ця сторінка захищена Google reCAPTCHA для забезпечення безпеки.
           </small>
         </form>
       </div>
