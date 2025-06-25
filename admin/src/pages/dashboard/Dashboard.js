@@ -14,10 +14,8 @@ import {
   Comment,
   Category,
   TrendingUp,
-  Visibility,
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import api from '../../context/apiCalls';
 
 const StatCard = ({ title, value, icon, color, trend }) => (
   <Card sx={{ height: '100%' }}>
