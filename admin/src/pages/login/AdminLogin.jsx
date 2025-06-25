@@ -9,7 +9,8 @@ import {
   Lock,
   Security,
   Dashboard,
-  MovieFilter
+  MovieFilter,
+  AdminPanelSettings
 } from '@material-ui/icons';
 
 export default function AdminLogin() {
@@ -19,7 +20,7 @@ export default function AdminLogin() {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const { isFetching, dispatch } = useContext(AuthContext);
+  const { isFetching, error, dispatch } = useContext(AuthContext);
 
   const validateForm = () => {
     const newErrors = {};
@@ -32,8 +33,8 @@ export default function AdminLogin() {
     
     if (!password) {
       newErrors.password = 'Пароль є обов\'язковим полем';
-    } else if (password.length < 8) {
-      newErrors.password = 'Пароль повинен містити мінімум 8 символів';
+    } else if (password.length < 6) {
+      newErrors.password = 'Пароль повинен містити мінімум 6 символів';
     }
     
     setErrors(newErrors);
@@ -45,10 +46,13 @@ export default function AdminLogin() {
     
     if (validateForm()) {
       setIsLoading(true);
+      setErrors({});
+      
       try {
         await login({ email, password, rememberMe }, dispatch);
       } catch (error) {
         console.error('Login error:', error);
+        setErrors({ general: 'Помилка входу. Спробуйте ще раз.' });
       } finally {
         setIsLoading(false);
       }
@@ -66,6 +70,11 @@ export default function AdminLogin() {
       if (errors.password) {
         setErrors(prev => ({ ...prev, password: '' }));
       }
+    }
+    
+    // Очищаємо загальну помилку при зміні будь-якого поля
+    if (errors.general) {
+      setErrors(prev => ({ ...prev, general: '' }));
     }
   };
 
@@ -136,6 +145,13 @@ export default function AdminLogin() {
               <h2>Авторизація адміністратора</h2>
               <p>Введіть облікові дані для доступу до панелі управління</p>
             </div>
+            
+            {/* Відображення загальної помилки */}
+            {(error || errors.general) && (
+              <div className="error-message">
+                <span className="error-text">{error || errors.general}</span>
+              </div>
+            )}
             
             <form className="admin-login-form" onSubmit={handleLogin}>
               <div className="form-group">

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8800/api/auth";
+const API_URL = "http://localhost:5000/api/auth";
 
 export const loginCall = async (userCredentials, dispatch) => {
   dispatch({ type: "LOGIN_START" });
@@ -14,7 +14,8 @@ export const loginCall = async (userCredentials, dispatch) => {
       dispatch({ type: "LOGIN_FAILURE", payload: "Доступ заборонено. Тільки для адміністраторів." });
     }
   } catch (err) {
-    dispatch({ type: "LOGIN_FAILURE", payload: err.response?.data?.message || "Помилка входу" });
+    const errorMessage = err.response?.data?.message || "Помилка входу";
+    dispatch({ type: "LOGIN_FAILURE", payload: errorMessage });
   }
 };
 
