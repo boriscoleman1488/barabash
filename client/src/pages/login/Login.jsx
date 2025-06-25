@@ -1,17 +1,65 @@
 import "./Login.scss";
-import { useContext } from "react"; // Add useEffect import
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { login } from "../../authContext/apiCalls";
 import { AuthContext } from "../../authContext/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const { dispatch } = useContext(AuthContext);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  });
+  const [error, setError] = useState("");
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  
+  const { dispatch, isFetching } = useContext(AuthContext);
 
-  const handleLogin = (e) => {
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    login({ email, password }, dispatch);
+    setError("");
+    setShowResendVerification(false);
+    
+    try {
+      await login(formData, dispatch);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Помилка входу";
+      setError(errorMessage);
+      
+      // Показуємо опцію повторної відправки, якщо email не підтверджено
+      if (errorMessage.includes("Email не підтверджено")) {
+        setShowResendVerification(true);
+      }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setError("");
+        alert("Лист підтвердження відправлено на вашу пошту!");
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError("Помилка відправки листа підтвердження");
+    }
   };
 
   return (
@@ -21,34 +69,76 @@ export default function Login() {
           <img
             className="logo"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png"
-            alt=""
+            alt="Netflix"
           />
         </div>
       </div>
+      
       <div className="container">
-        <form>
-          <h1>Sign In</h1>
-          <input
-            type="email"
-            placeholder="Email or phone number"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button className="loginButton" onClick={handleLogin}>
-            Sign In
-          </button>
-          <span>
-            New to Netflix? <b>Sign up now.</b>
-          </span>
-          <small>
-            This page is protected by Google reCAPTCHA to ensure you're not a
-            bot. <b>Learn more</b>.
-          </small>
-        </form>
+        <div className="formContainer">
+          <h1>Увійти</h1>
+          
+          {error && (
+            <div className="error-message">
+              {error}
+              {showResendVerification && (
+                <button 
+                  onClick={handleResendVerification}
+                  className="resend-button"
+                >
+                  Відправити лист повторно
+                </button>
+              )}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="loginForm">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email або номер телефону"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            
+            <input
+              type="password"
+              name="password"
+              placeholder="Пароль"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+
+            <button 
+              type="submit" 
+              className="loginButton"
+              disabled={isFetching}
+            >
+              {isFetching ? "Вхід..." : "Увійти"}
+            </button>
+          </form>
+
+          <div className="formHelp">
+            <div className="rememberMe">
+              <input type="checkbox" id="remember" />
+              <label htmlFor="remember">Запам'ятати мене</label>
+            </div>
+            <Link to="/forgot-password" className="helpLink">
+              Потрібна допомога?
+            </Link>
+          </div>
+
+          <div className="signupLink">
+            Вперше на Netflix? <Link to="/register">Зареєструйтеся зараз</Link>
+          </div>
+
+          <div className="captchaText">
+            Ця сторінка захищена Google reCAPTCHA, щоб переконатися, що ви не бот.{" "}
+            <a href="#" className="learnMore">Дізнатися більше</a>.
+          </div>
+        </div>
       </div>
     </div>
   );

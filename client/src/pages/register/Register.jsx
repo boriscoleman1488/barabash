@@ -1,53 +1,50 @@
-import { useRef, useEffect } from "react"; // Add useEffect import
-import { useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import "./Register.scss";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-
-  const emailRef = useRef();
-  const passwordRef = useRef();
-  const usernameRef = useRef();
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSignIn = (e) => {
-    e.preventDefault();
-    console.log("sign in");
-    navigate("/login");
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleStart = () => {
-    setEmail(emailRef.current.value);
-  };
-  const handleFinish = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setUsername(usernameRef.current.value);
-    setPassword(passwordRef.current.value);
-  };
+    setLoading(true);
+    setError("");
+    setMessage("");
 
-  useEffect(() => {
-    // Trigger post request when username and password are updated
-    if (username && password) {
-      const postData = async () => {
-        try {
-          await axios.post("http://localhost:5000/api/auth/register", {
-            email,
-            password,
-            username,
-          });
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/register", formData);
+      
+      if (response.data.success) {
+        setMessage(response.data.message);
+        setTimeout(() => {
           navigate("/login");
-        } catch (err) {
-          console.log(err);
-        }
-      };
-      postData();
+        }, 3000);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Помилка реєстрації");
+    } finally {
+      setLoading(false);
     }
-  }, [navigate, email, username, password]);
+  };
 
   return (
     <div className="register">
@@ -56,36 +53,83 @@ export default function Register() {
           <img
             className="logo"
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/2560px-Netflix_2015_logo.svg.png"
-            alt=""
+            alt="Netflix"
           />
+          <Link to="/login" className="loginButton">
+            Увійти
+          </Link>
         </div>
       </div>
 
       <div className="container">
-        <h1>Unlimited movies, TV shows, and more.</h1>
-        <h2>Watch anywhere. Cancel anytime.</h2>
-        <p>
-          Ready to watch? Enter your email to create or restart your membership.
-        </p>
-        {!email ? (
-          <div className="input">
-            <input type="email" placeholder="email address" ref={emailRef} />
-            <button className="registerButton" onClick={handleStart}>
-              Get Started
-            </button>
-            <button className="registerButton2" onClick={handleSignIn}>
-              Sign In
-            </button>
-          </div>
-        ) : (
-          <form className="input">
-            <input type="text" placeholder="username" ref={usernameRef} />
-            <input type="password" placeholder="password" ref={passwordRef} />
-            <button className="registerButton" onClick={handleFinish}>
-              Start
+        <div className="formContainer">
+          <h1>Створити акаунт</h1>
+          <p>Приєднуйтесь до мільйонів користувачів BestFlix</p>
+          
+          {message && <div className="success-message">{message}</div>}
+          {error && <div className="error-message">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="registerForm">
+            <div className="inputGroup">
+              <input
+                type="text"
+                name="firstName"
+                placeholder="Ім'я"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+              />
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Прізвище"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            
+            <input
+              type="text"
+              name="username"
+              placeholder="Ім'я користувача"
+              value={formData.username}
+              onChange={handleChange}
+              required
+            />
+            
+            <input
+              type="email"
+              name="email"
+              placeholder="Email адреса"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+            
+            <input
+              type="password"
+              name="password"
+              placeholder="Пароль"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength="6"
+            />
+
+            <button 
+              type="submit" 
+              className="registerButton"
+              disabled={loading}
+            >
+              {loading ? "Реєстрація..." : "Зареєструватися"}
             </button>
           </form>
-        )}
+
+          <div className="loginLink">
+            Вже маєте акаунт? <Link to="/login">Увійти</Link>
+          </div>
+        </div>
       </div>
     </div>
   );
