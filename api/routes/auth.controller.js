@@ -75,64 +75,20 @@ const sendVerificationEmail = async (email, token) => {
   await transporter.sendMail(mailOptions);
 };
 
-// Send password reset email
-const sendPasswordResetEmail = async (email, token) => {
-  if (!transporter) {
-    console.log('Email транспортер не налаштований, пропускаємо відправку email');
-    return;
-  }
-
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Відновлення паролю - BestFlix',
-    html: `
-      <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #2563eb; margin: 0;">BestFlix</h1>
-        </div>
-        
-        <div style="background-color: #f8fafc; padding: 30px; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <h2 style="color: #1e293b; margin-top: 0;">Відновлення паролю</h2>
-          
-          <p style="color: #475569; line-height: 1.6;">
-            Ви запросили відновлення паролю для вашого акаунту BestFlix. Натисніть на кнопку нижче для створення нового паролю.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" 
-               style="background-color: #dc2626; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block;">
-              Відновити пароль
-            </a>
-          </div>
-          
-          <p style="color: #64748b; font-size: 14px; margin-bottom: 0;">
-            Якщо кнопка не працює, скопіюйте та вставте це посилання в ваш браузер:
-          </p>
-          <p style="color: #dc2626; font-size: 14px; word-break: break-all; margin-top: 5px;">
-            ${resetUrl}
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
-          
-          <p style="color: #64748b; font-size: 12px; margin: 0;">
-            Це посилання дійсне протягом 1 години. Якщо ви не запитували відновлення паролю, просто проігноруйте цей лист.
-          </p>
-        </div>
-      </div>
-    `
-  };
-
-  await transporter.sendMail(mailOptions);
-};
-
 // Register user
 const registerUser = async (req, res) => {
   const { username, email, password, firstName, lastName } = req.body;
 
   try {
+    // Перевіряємо підключення до БД
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: "База даних недоступна. Спробуйте пізніше."
+      });
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({
       $or: [{ email }, { username }]
@@ -188,6 +144,88 @@ const registerUser = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Помилка сервера",
+      errorMessage: error.message,
+    });
+  }
+};
+
+// Login user
+const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Перевіряємо підключення до БД
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        message: "База даних недоступна. Спробуйте пізніше."
+      });
+    }
+
+    let user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Неправильний email або пароль"
+      });
+    }
+
+    // Check if user is active
+    if (!user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: "Акаунт деактивовано. Зверніться до адміністратора."
+      });
+    }
+
+    // Check if email is verified (тільки якщо email сервіс налаштований)
+    if (transporter && !user.isEmailVerified) {
+      return res.status(401).json({
+        success: false,
+        message: "Email не підтверджено. Перевірте пошту або запросіть повторне підтвердження."
+      });
+    }
+
+    // Verify password
+    const bytes = CryptoJS.AES.decrypt(
+      user.password,
+      process.env.SECRET_KEY_FOR_CRYPTOJS
+    );
+    const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
+
+    if (originalPassword !== password) {
+      return res.status(401).json({
+        success: false,
+        message: "Неправильний email або пароль"
+      });
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const accessToken = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.SECRET_KEY_FOR_CRYPTOJS,
+      { expiresIn: "30d" }
+    );
+
+    const { password: userPassword, ...info } = user._doc;
+
+    res.status(200).json({
+      success: true,
+      ...info,
+      accessToken
+    });
+  } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       message: "Помилка сервера",
@@ -290,77 +328,6 @@ const resendVerificationEmail = async (req, res) => {
   }
 };
 
-// Login user
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    let user = await User.findOne({ email: email });
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Неправильний email або пароль"
-      });
-    }
-
-    // Check if user is active
-    if (!user.isActive) {
-      return res.status(401).json({
-        success: false,
-        message: "Акаунт деактивовано. Зверніться до адміністратора."
-      });
-    }
-
-    // Check if email is verified (тільки якщо email сервіс налаштований)
-    if (transporter && !user.isEmailVerified) {
-      return res.status(401).json({
-        success: false,
-        message: "Email не підтверджено. Перевірте пошту або запросіть повторне підтвердження."
-      });
-    }
-
-    // Verify password
-    const bytes = CryptoJS.AES.decrypt(
-      user.password,
-      process.env.SECRET_KEY_FOR_CRYPTOJS
-    );
-    const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
-
-    if (originalPassword !== password) {
-      return res.status(401).json({
-        success: false,
-        message: "Неправильний email або пароль"
-      });
-    }
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
-
-    // Generate JWT token
-    const accessToken = jwt.sign(
-      { id: user._id, isAdmin: user.isAdmin },
-      process.env.SECRET_KEY_FOR_CRYPTOJS,
-      { expiresIn: "30d" }
-    );
-
-    const { password: userPassword, ...info } = user._doc;
-
-    res.status(200).json({
-      success: true,
-      ...info,
-      accessToken
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Помилка сервера",
-      errorMessage: error.message,
-    });
-  }
-};
-
 // Forgot password
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -390,20 +357,10 @@ const forgotPassword = async (req, res) => {
     user.passwordResetEndTime = resetEndTime;
     await user.save();
 
-    // Send reset email
-    try {
-      await sendPasswordResetEmail(email, resetToken);
-      res.status(200).json({
-        success: true,
-        message: "Інструкції для відновлення паролю відправлено на email"
-      });
-    } catch (emailError) {
-      res.status(500).json({
-        success: false,
-        message: "Помилка відправки email",
-        errorMessage: emailError.message
-      });
-    }
+    res.status(200).json({
+      success: true,
+      message: "Функція відновлення паролю буде доступна після налаштування email сервісу"
+    });
   } catch (error) {
     res.status(500).json({
       success: false,

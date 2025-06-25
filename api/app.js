@@ -38,9 +38,23 @@ app.use(express.static(path.join(__dirname, "public/client")));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+  const mongoose = require('mongoose');
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  
   res.json({ 
     status: 'OK', 
     message: 'BestFlix API is running',
+    database: dbStatus,
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test endpoint для перевірки API
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API працює коректно!',
     timestamp: new Date().toISOString()
   });
 });
@@ -67,7 +81,8 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Маршрут не знайдено'
+    message: 'Маршрут не знайдено',
+    path: req.originalUrl
   });
 });
 
