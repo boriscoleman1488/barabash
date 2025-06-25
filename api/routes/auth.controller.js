@@ -4,13 +4,18 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Створюємо транспортер тільки якщо є правильні налаштування
+let transporter = null;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS && 
+    process.env.EMAIL_USER !== 'test@example.com') {
+  transporter = nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+}
 
 // Generate verification token
 const generateVerificationToken = () => {
@@ -19,6 +24,11 @@ const generateVerificationToken = () => {
 
 // Send verification email
 const sendVerificationEmail = async (email, token) => {
+  if (!transporter) {
+    console.log('Email транспортер не налаштований, пропускаємо відправку email');
+    return;
+  }
+
   const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${token}`;
 
   const mailOptions = {
@@ -38,6 +48,11 @@ const sendVerificationEmail = async (email, token) => {
 
 // Send password reset email
 const sendPasswordResetEmail = async (email, token) => {
+  if (!transporter) {
+    console.log('Email транспортер не налаштований, пропускаємо відправку email');
+    return;
+  }
+
   const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
 
   const mailOptions = {
@@ -86,15 +101,25 @@ const registerUser = async (req, res) => {
       firstName,
       lastName,
       emailVerificationToken: verificationToken,
-      emailVerificationEndTime: verificationEndTime
+      emailVerificationEndTime: verificationEndTime,
+      isEmailVerified: !transporter // Якщо немає email, автоматично підтверджуємо
     });
 
-    // Send verification email
-    await sendVerificationEmail(email, verificationToken);
+    // Send verification email only if transporter is configured
+    if (transporter) {
+      try {
+        await sendVerificationEmail(email, verificationToken);
+      } catch (emailError) {
+        console.log('Помилка відправки email:', emailError.message);
+        // Не блокуємо реєстрацію через помилку email
+      }
+    }
 
     res.status(201).json({
       success: true,
-      message: "Користувач створений. Перевірте email для підтвердження.",
+      message: transporter ? 
+        "Користувач створений. Перевірте email для підтвердження." :
+        "Користувач створений та автоматично підтверджений.",
       user: {
         id: user._id,
         username: user.username,
@@ -167,6 +192,13 @@ const resendVerificationEmail = async (req, res) => {
       });
     }
 
+    if (!transporter) {
+      return res.status(400).json({
+        success: false,
+        message: "Email сервіс не налаштований"
+      });
+    }
+
     // Generate new verification token
     const verificationToken = generateVerificationToken();
     const verificationEndTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -176,12 +208,19 @@ const resendVerificationEmail = async (req, res) => {
     await user.save();
 
     // Send verification email
-    await sendVerificationEmail(email, verificationToken);
-
-    res.status(200).json({
-      success: true,
-      message: "Email підтвердження відправлено"
-    });
+    try {
+      await sendVerificationEmail(email, verificationToken);
+      res.status(200).json({
+        success: true,
+        message: "Email підтвердження відправлено"
+      });
+    } catch (emailError) {
+      res.status(500).json({
+        success: false,
+        message: "Помилка відправки email",
+        errorMessage: emailError.message
+      });
+    }
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -213,8 +252,8 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Check if email is verified
-    if (!user.isEmailVerified) {
+    // Check if email is verified (тільки якщо email сервіс налаштований)
+    if (transporter && !user.isEmailVerified) {
       return res.status(401).json({
         success: false,
         message: "Email не підтверджено. Перевірте пошту або запросіть повторне підтвердження."
@@ -243,7 +282,7 @@ const loginUser = async (req, res) => {
     const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
       process.env.SECRET_KEY_FOR_CRYPTOJS,
-      { EndTimeIn: "30d" }
+      { expiresIn: "30d" }
     );
 
     const { password: userPassword, ...info } = user._doc;
@@ -276,6 +315,13 @@ const forgotPassword = async (req, res) => {
       });
     }
 
+    if (!transporter) {
+      return res.status(400).json({
+        success: false,
+        message: "Email сервіс не налаштований"
+      });
+    }
+
     // Generate reset token
     const resetToken = generateVerificationToken();
     const resetEndTime = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
@@ -285,12 +331,19 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // Send reset email
-    await sendPasswordResetEmail(email, resetToken);
-
-    res.status(200).json({
-      success: true,
-      message: "Інструкції для відновлення паролю відправлено на email"
-    });
+    try {
+      await sendPasswordResetEmail(email, resetToken);
+      res.status(200).json({
+        success: true,
+        message: "Інструкції для відновлення паролю відправлено на email"
+      });
+    } catch (emailError) {
+      res.status(500).json({
+        success: false,
+        message: "Помилка відправки email",
+        errorMessage: emailError.message
+      });
+    }
   } catch (error) {
     res.status(500).json({
       success: false,
