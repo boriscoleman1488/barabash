@@ -1,6 +1,6 @@
 import "./Login.scss";
 import { useContext, useState } from "react";
-import { login, resendVerification } from "../../authContext/apiCalls";
+import { login } from "../../authContext/apiCalls";
 import { AuthContext } from "../../authContext/AuthContext";
 import { Link } from "react-router-dom";
 
@@ -10,7 +10,6 @@ export default function Login() {
     password: ""
   });
   const [error, setError] = useState("");
-  const [showResendVerification, setShowResendVerification] = useState(false);
   
   const { dispatch, isFetching } = useContext(AuthContext);
 
@@ -24,7 +23,6 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    setShowResendVerification(false);
     
     try {
       await login(formData, dispatch);
@@ -32,26 +30,6 @@ export default function Login() {
       console.error('Login error:', err);
       const errorMessage = err.response?.data?.message || err.message || "Помилка входу";
       setError(errorMessage);
-      
-      // Показуємо опцію повторної відправки, якщо email не підтверджено
-      if (errorMessage.includes("Email не підтверджено")) {
-        setShowResendVerification(true);
-      }
-    }
-  };
-
-  const handleResendVerification = async () => {
-    try {
-      const data = await resendVerification(formData.email);
-      
-      if (data.success) {
-        setError("");
-        alert("Лист підтвердження відправлено на вашу пошту!");
-      } else {
-        setError(data.message);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || "Помилка відправки листа підтвердження");
     }
   };
 
@@ -74,14 +52,6 @@ export default function Login() {
           {error && (
             <div className="error-message">
               {error}
-              {showResendVerification && (
-                <button 
-                  onClick={handleResendVerification}
-                  className="resend-button"
-                >
-                  Відправити лист повторно
-                </button>
-              )}
             </div>
           )}
 
@@ -118,9 +88,6 @@ export default function Login() {
               <input type="checkbox" id="remember" />
               <label htmlFor="remember">Запам'ятати мене</label>
             </div>
-            <Link to="/forgot-password" className="helpLink">
-              Потрібна допомога?
-            </Link>
           </div>
 
           <div className="signupLink">

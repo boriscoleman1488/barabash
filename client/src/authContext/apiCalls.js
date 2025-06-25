@@ -59,30 +59,3 @@ export const register = async (userData) => {
     throw err;
   }
 };
-
-export const forgotPassword = async (email) => {
-  try {
-    const res = await apiClient.post("/auth/forgot-password", { email });
-    return res.data;
-  } catch (err) {
-    throw err;
-  }
-};
-
-export const verifyEmail = async (token) => {
-  try {
-    const res = await apiClient.get(`/auth/verify-email/${token}`);
-    return res.data;
-  } catch (err) {
-    throw err;
-  }
-};
-
-export const resendVerification = async (email) => {
-  try {
-    const res = await apiClient.post("/auth/resend-verification", { email });
-    return res.data;
-  } catch (err) {
-    throw err;
-  }
-};
