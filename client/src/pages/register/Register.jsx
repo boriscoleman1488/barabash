@@ -1,7 +1,7 @@
-import { useRef, useEffect, useState } from "react";
+import { useState } from "react";
 import "./Register.scss";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { register } from "../../authContext/apiCalls";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -31,16 +31,17 @@ export default function Register() {
     setMessage("");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", formData);
+      const response = await register(formData);
       
-      if (response.data.success) {
-        setMessage(response.data.message);
+      if (response.success) {
+        setMessage(response.message);
         setTimeout(() => {
           navigate("/login");
         }, 3000);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Помилка реєстрації");
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || err.message || "Помилка реєстрації");
     } finally {
       setLoading(false);
     }
@@ -110,7 +111,7 @@ export default function Register() {
             <input
               type="password"
               name="password"
-              placeholder="Пароль"
+              placeholder="Пароль (мінімум 6 символів)"
               value={formData.password}
               onChange={handleChange}
               required

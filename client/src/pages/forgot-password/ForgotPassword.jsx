@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { forgotPassword } from "../../authContext/apiCalls";
 import "./ForgotPassword.scss";
 
 export default function ForgotPassword() {
@@ -15,15 +16,7 @@ export default function ForgotPassword() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
+      const data = await forgotPassword(email);
 
       if (data.success) {
         setMessage(data.message);
@@ -31,7 +24,7 @@ export default function ForgotPassword() {
         setError(data.message);
       }
     } catch (err) {
-      setError("Помилка сервера. Спробуйте пізніше.");
+      setError(err.response?.data?.message || "Помилка сервера. Спробуйте пізніше.");
     } finally {
       setLoading(false);
     }

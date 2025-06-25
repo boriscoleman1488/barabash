@@ -1,6 +1,6 @@
 import "./Login.scss";
 import { useContext, useState } from "react";
-import { login } from "../../authContext/apiCalls";
+import { login, resendVerification } from "../../authContext/apiCalls";
 import { AuthContext } from "../../authContext/AuthContext";
 import { Link } from "react-router-dom";
 
@@ -29,7 +29,8 @@ export default function Login() {
     try {
       await login(formData, dispatch);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Помилка входу";
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || err.message || "Помилка входу";
       setError(errorMessage);
       
       // Показуємо опцію повторної відправки, якщо email не підтверджено
@@ -41,15 +42,7 @@ export default function Login() {
 
   const handleResendVerification = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/auth/resend-verification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: formData.email }),
-      });
-
-      const data = await response.json();
+      const data = await resendVerification(formData.email);
       
       if (data.success) {
         setError("");
@@ -58,7 +51,7 @@ export default function Login() {
         setError(data.message);
       }
     } catch (err) {
-      setError("Помилка відправки листа підтвердження");
+      setError(err.response?.data?.message || "Помилка відправки листа підтвердження");
     }
   };
 

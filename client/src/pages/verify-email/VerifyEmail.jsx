@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { verifyEmail } from "../../authContext/apiCalls";
 import "./VerifyEmail.scss";
 
 export default function VerifyEmail() {
@@ -8,10 +9,9 @@ export default function VerifyEmail() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const verifyEmail = async () => {
+    const handleVerifyEmail = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/verify-email/${token}`);
-        const data = await response.json();
+        const data = await verifyEmail(token);
 
         if (data.success) {
           setStatus("success");
@@ -22,12 +22,12 @@ export default function VerifyEmail() {
         }
       } catch (err) {
         setStatus("error");
-        setMessage("Помилка підтвердження email");
+        setMessage(err.response?.data?.message || "Помилка підтвердження email");
       }
     };
 
     if (token) {
-      verifyEmail();
+      handleVerifyEmail();
     }
   }, [token]);
 
