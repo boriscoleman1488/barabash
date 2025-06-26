@@ -57,12 +57,6 @@ export const movieAPI = {
     return response.data;
   },
 
-  // Отримати фільми за жанром
-  getByGenre: async (genre, page = 1, limit = 10) => {
-    const response = await apiClient.get(`/movies/genre/${genre}?page=${page}&limit=${limit}`);
-    return response.data;
-  },
-
   // Отримати статистику фільмів
   getStats: async () => {
     const response = await apiClient.get("/movies/stats");
