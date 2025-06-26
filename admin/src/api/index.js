@@ -14,9 +14,17 @@ const apiClient = axios.create({
 // Interceptor для автоматичного додавання токена
 apiClient.interceptors.request.use(
   (config) => {
-    const adminUser = JSON.parse(localStorage.getItem("admin_user") || '{}');
-    if (adminUser.accessToken) {
-      config.headers.token = `Bearer ${adminUser.accessToken}`;
+    const adminUserData = localStorage.getItem("admin_user");
+    if (adminUserData) {
+      try {
+        const adminUser = JSON.parse(adminUserData);
+        if (adminUser && adminUser.accessToken) {
+          config.headers.token = `Bearer ${adminUser.accessToken}`;
+        }
+      } catch (error) {
+        console.error('Error parsing admin user data:', error);
+        localStorage.removeItem("admin_user");
+      }
     }
     return config;
   },
