@@ -412,7 +412,7 @@ body {
   background: var(--card-background);
   border-radius: var(--border-radius);
   width: 90%;
-  max-width: 500px;
+  max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-medium);
@@ -587,6 +587,96 @@ body {
   text-align: center;
   padding: var(--spacing-xxl);
   font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+/* Стилі для сезонів та епізодів */
+.series-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.add-season-btn {
+  margin-bottom: 16px;
+}
+
+.season-card {
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+}
+
+.season-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.season-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.episodes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.add-episode-btn {
+  margin-bottom: 8px;
+  align-self: flex-start;
+}
+
+.episode-card {
+  background: white;
+  border-radius: var(--border-radius-small);
+  padding: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.episode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.episode-header h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.remove-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.input-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.current-file {
+  margin-top: 8px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 

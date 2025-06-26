@@ -38,6 +38,10 @@ export default function Movies() {
     seasons: []
   });
 
+  // Стан для управління сезонами та епізодами
+  const [seasons, setSeasons] = useState([]);
+  const [editingSeasons, setEditingSeasons] = useState([]);
+
   const API_BASE_URL = "http://localhost:5000/api";
 
   // Створюємо axios instance з токеном
@@ -137,7 +141,7 @@ export default function Movies() {
           formData.append('pricing.buyPrice', newMovie.pricing.buyPrice);
           formData.append('pricing.isFree', newMovie.pricing.isFree);
         } else if (key === 'seasons' && newMovie.type === 'series') {
-          formData.append(key, JSON.stringify(newMovie[key]));
+          formData.append(key, JSON.stringify(seasons));
         } else {
           formData.append(key, newMovie[key]);
         }
@@ -183,6 +187,7 @@ export default function Movies() {
           },
           seasons: []
         });
+        setSeasons([]);
         fetchMovies();
         alert("Фільм успішно створений!");
       } else {
@@ -209,7 +214,7 @@ export default function Movies() {
           formData.append('pricing.buyPrice', editingMovie.pricing.buyPrice);
           formData.append('pricing.isFree', editingMovie.pricing.isFree);
         } else if (key === 'seasons' && editingMovie.type === 'series') {
-          formData.append(key, JSON.stringify(editingMovie[key]));
+          formData.append(key, JSON.stringify(editingSeasons));
         } else if (key !== '_id' && key !== 'createdAt' && key !== 'updatedAt' && key !== '__v') {
           formData.append(key, editingMovie[key]);
         }
@@ -237,6 +242,7 @@ export default function Movies() {
       if (data.success) {
         setShowEditModal(false);
         setEditingMovie(null);
+        setEditingSeasons([]);
         fetchMovies();
         alert("Фільм успішно оновлений!");
       } else {
@@ -320,7 +326,120 @@ export default function Movies() {
       categories: movie.categories?.map(c => c.name || c) || [],
       pricing: movie.pricing || { buyPrice: 0, isFree: true }
     });
+    setEditingSeasons(movie.seasons || []);
     setShowEditModal(true);
+  };
+
+  // Функції для управління сезонами та епізодами
+  const addSeason = () => {
+    setSeasons([...seasons, {
+      seasonNumber: seasons.length + 1,
+      episodes: []
+    }]);
+  };
+
+  const addEpisode = (seasonIndex) => {
+    const updatedSeasons = [...seasons];
+    updatedSeasons[seasonIndex].episodes.push({
+      episodeNumber: updatedSeasons[seasonIndex].episodes.length + 1,
+      title: "",
+      description: "",
+      duration: 0,
+      videoUrl: ""
+    });
+    setSeasons(updatedSeasons);
+  };
+
+  const updateSeason = (index, field, value) => {
+    const updatedSeasons = [...seasons];
+    updatedSeasons[index][field] = value;
+    setSeasons(updatedSeasons);
+  };
+
+  const updateEpisode = (seasonIndex, episodeIndex, field, value) => {
+    const updatedSeasons = [...seasons];
+    updatedSeasons[seasonIndex].episodes[episodeIndex][field] = value;
+    setSeasons(updatedSeasons);
+  };
+
+  const removeSeason = (index) => {
+    if (window.confirm("Ви впевнені, що хочете видалити цей сезон?")) {
+      const updatedSeasons = [...seasons];
+      updatedSeasons.splice(index, 1);
+      // Оновлюємо номери сезонів
+      updatedSeasons.forEach((season, idx) => {
+        season.seasonNumber = idx + 1;
+      });
+      setSeasons(updatedSeasons);
+    }
+  };
+
+  const removeEpisode = (seasonIndex, episodeIndex) => {
+    if (window.confirm("Ви впевнені, що хочете видалити цей епізод?")) {
+      const updatedSeasons = [...seasons];
+      updatedSeasons[seasonIndex].episodes.splice(episodeIndex, 1);
+      // Оновлюємо номери епізодів
+      updatedSeasons[seasonIndex].episodes.forEach((episode, idx) => {
+        episode.episodeNumber = idx + 1;
+      });
+      setSeasons(updatedSeasons);
+    }
+  };
+
+  // Функції для редагування сезонів
+  const addEditingSeason = () => {
+    setEditingSeasons([...editingSeasons, {
+      seasonNumber: editingSeasons.length + 1,
+      episodes: []
+    }]);
+  };
+
+  const addEditingEpisode = (seasonIndex) => {
+    const updatedSeasons = [...editingSeasons];
+    updatedSeasons[seasonIndex].episodes.push({
+      episodeNumber: updatedSeasons[seasonIndex].episodes.length + 1,
+      title: "",
+      description: "",
+      duration: 0,
+      videoUrl: ""
+    });
+    setEditingSeasons(updatedSeasons);
+  };
+
+  const updateEditingSeason = (index, field, value) => {
+    const updatedSeasons = [...editingSeasons];
+    updatedSeasons[index][field] = value;
+    setEditingSeasons(updatedSeasons);
+  };
+
+  const updateEditingEpisode = (seasonIndex, episodeIndex, field, value) => {
+    const updatedSeasons = [...editingSeasons];
+    updatedSeasons[seasonIndex].episodes[episodeIndex][field] = value;
+    setEditingSeasons(updatedSeasons);
+  };
+
+  const removeEditingSeason = (index) => {
+    if (window.confirm("Ви впевнені, що хочете видалити цей сезон?")) {
+      const updatedSeasons = [...editingSeasons];
+      updatedSeasons.splice(index, 1);
+      // Оновлюємо номери сезонів
+      updatedSeasons.forEach((season, idx) => {
+        season.seasonNumber = idx + 1;
+      });
+      setEditingSeasons(updatedSeasons);
+    }
+  };
+
+  const removeEditingEpisode = (seasonIndex, episodeIndex) => {
+    if (window.confirm("Ви впевнені, що хочете видалити цей епізод?")) {
+      const updatedSeasons = [...editingSeasons];
+      updatedSeasons[seasonIndex].episodes.splice(episodeIndex, 1);
+      // Оновлюємо номери епізодів
+      updatedSeasons[seasonIndex].episodes.forEach((episode, idx) => {
+        episode.episodeNumber = idx + 1;
+      });
+      setEditingSeasons(updatedSeasons);
+    }
   };
 
   return (
@@ -722,33 +841,125 @@ export default function Movies() {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Відео {newMovie.type === 'series' ? '(для серіалів - опціонально)' : ''}</label>
-                  <input
-                    type="file"
-                    id="videoUrl"
-                    accept="video/*"
-                    className="form-input"
-                  />
-                </div>
+                {newMovie.type === 'movie' && (
+                  <div className="form-group">
+                    <label className="form-label">Відео</label>
+                    <input
+                      type="file"
+                      id="videoUrl"
+                      accept="video/*"
+                      className="form-input"
+                    />
+                  </div>
+                )}
 
                 {newMovie.type === 'series' && (
-                  <div className="form-group">
-                    <label className="form-label">Сезони (JSON формат)</label>
-                    <textarea
-                      value={JSON.stringify(newMovie.seasons, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const seasons = JSON.parse(e.target.value);
-                          setNewMovie({...newMovie, seasons});
-                        } catch (err) {
-                          // Ignore invalid JSON
-                        }
-                      }}
-                      rows="5"
-                      placeholder='[{"seasonNumber": 1, "episodes": [{"episodeNumber": 1, "title": "Епізод 1", "description": "Опис", "duration": 45, "videoUrl": "url"}]}]'
-                      className="form-textarea"
-                    />
+                  <div className="series-section">
+                    <h3 className="section-title">Сезони та епізоди</h3>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary add-season-btn"
+                      onClick={addSeason}
+                    >
+                      + Додати сезон
+                    </button>
+
+                    {seasons.map((season, seasonIndex) => (
+                      <div key={seasonIndex} className="season-card">
+                        <div className="season-header">
+                          <h4>Сезон {season.seasonNumber}</h4>
+                          <button 
+                            type="button" 
+                            className="btn btn-danger remove-btn"
+                            onClick={() => removeSeason(seasonIndex)}
+                          >
+                            Видалити сезон
+                          </button>
+                        </div>
+
+                        <div className="episodes-list">
+                          <button 
+                            type="button" 
+                            className="btn btn-secondary add-episode-btn"
+                            onClick={() => addEpisode(seasonIndex)}
+                          >
+                            + Додати епізод
+                          </button>
+
+                          {season.episodes.map((episode, episodeIndex) => (
+                            <div key={episodeIndex} className="episode-card">
+                              <div className="episode-header">
+                                <h5>Епізод {episode.episodeNumber}</h5>
+                                <button 
+                                  type="button" 
+                                  className="btn btn-danger remove-btn"
+                                  onClick={() => removeEpisode(seasonIndex, episodeIndex)}
+                                >
+                                  Видалити
+                                </button>
+                              </div>
+
+                              <div className="form-row">
+                                <div className="form-group">
+                                  <label className="form-label">Назва епізоду</label>
+                                  <input
+                                    type="text"
+                                    value={episode.title}
+                                    onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'title', e.target.value)}
+                                    className="form-input"
+                                  />
+                                </div>
+                                <div className="form-group">
+                                  <label className="form-label">Тривалість (хв)</label>
+                                  <input
+                                    type="number"
+                                    value={episode.duration}
+                                    onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'duration', parseInt(e.target.value))}
+                                    min="1"
+                                    className="form-input"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="form-group">
+                                <label className="form-label">Опис епізоду</label>
+                                <textarea
+                                  value={episode.description}
+                                  onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'description', e.target.value)}
+                                  rows="2"
+                                  className="form-textarea"
+                                />
+                              </div>
+
+                              <div className="form-group">
+                                <label className="form-label">Відео епізоду</label>
+                                <input
+                                  type="file"
+                                  accept="video/*"
+                                  className="form-input"
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      // Тут ми зберігаємо тільки ім'я файлу, оскільки сам файл буде завантажений пізніше
+                                      updateEpisode(seasonIndex, episodeIndex, 'videoUrl', e.target.files[0].name);
+                                    }
+                                  }}
+                                />
+                                <div className="input-hint">
+                                  Або введіть URL відео:
+                                </div>
+                                <input
+                                  type="url"
+                                  value={episode.videoUrl || ''}
+                                  onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'videoUrl', e.target.value)}
+                                  placeholder="https://example.com/video.mp4"
+                                  className="form-input"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
                 
@@ -994,32 +1205,129 @@ export default function Movies() {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Відео (залишити пустим, щоб не змінювати)</label>
-                  <input
-                    type="file"
-                    id="editVideoUrl"
-                    accept="video/*"
-                    className="form-input"
-                  />
-                </div>
+                {editingMovie.type === 'movie' && (
+                  <div className="form-group">
+                    <label className="form-label">Відео (залишити пустим, щоб не змінювати)</label>
+                    <input
+                      type="file"
+                      id="editVideoUrl"
+                      accept="video/*"
+                      className="form-input"
+                    />
+                  </div>
+                )}
 
                 {editingMovie.type === 'series' && (
-                  <div className="form-group">
-                    <label className="form-label">Сезони (JSON формат)</label>
-                    <textarea
-                      value={JSON.stringify(editingMovie.seasons || [], null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const seasons = JSON.parse(e.target.value);
-                          setEditingMovie({...editingMovie, seasons});
-                        } catch (err) {
-                          // Ignore invalid JSON
-                        }
-                      }}
-                      rows="5"
-                      className="form-textarea"
-                    />
+                  <div className="series-section">
+                    <h3 className="section-title">Сезони та епізоди</h3>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary add-season-btn"
+                      onClick={addEditingSeason}
+                    >
+                      + Додати сезон
+                    </button>
+
+                    {editingSeasons.map((season, seasonIndex) => (
+                      <div key={seasonIndex} className="season-card">
+                        <div className="season-header">
+                          <h4>Сезон {season.seasonNumber}</h4>
+                          <button 
+                            type="button" 
+                            className="btn btn-danger remove-btn"
+                            onClick={() => removeEditingSeason(seasonIndex)}
+                          >
+                            Видалити сезон
+                          </button>
+                        </div>
+
+                        <div className="episodes-list">
+                          <button 
+                            type="button" 
+                            className="btn btn-secondary add-episode-btn"
+                            onClick={() => addEditingEpisode(seasonIndex)}
+                          >
+                            + Додати епізод
+                          </button>
+
+                          {season.episodes.map((episode, episodeIndex) => (
+                            <div key={episodeIndex} className="episode-card">
+                              <div className="episode-header">
+                                <h5>Епізод {episode.episodeNumber}</h5>
+                                <button 
+                                  type="button" 
+                                  className="btn btn-danger remove-btn"
+                                  onClick={() => removeEditingEpisode(seasonIndex, episodeIndex)}
+                                >
+                                  Видалити
+                                </button>
+                              </div>
+
+                              <div className="form-row">
+                                <div className="form-group">
+                                  <label className="form-label">Назва епізоду</label>
+                                  <input
+                                    type="text"
+                                    value={episode.title}
+                                    onChange={(e) => updateEditingEpisode(seasonIndex, episodeIndex, 'title', e.target.value)}
+                                    className="form-input"
+                                  />
+                                </div>
+                                <div className="form-group">
+                                  <label className="form-label">Тривалість (хв)</label>
+                                  <input
+                                    type="number"
+                                    value={episode.duration}
+                                    onChange={(e) => updateEditingEpisode(seasonIndex, episodeIndex, 'duration', parseInt(e.target.value))}
+                                    min="1"
+                                    className="form-input"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="form-group">
+                                <label className="form-label">Опис епізоду</label>
+                                <textarea
+                                  value={episode.description}
+                                  onChange={(e) => updateEditingEpisode(seasonIndex, episodeIndex, 'description', e.target.value)}
+                                  rows="2"
+                                  className="form-textarea"
+                                />
+                              </div>
+
+                              <div className="form-group">
+                                <label className="form-label">Відео епізоду</label>
+                                <input
+                                  type="file"
+                                  accept="video/*"
+                                  className="form-input"
+                                  onChange={(e) => {
+                                    if (e.target.files[0]) {
+                                      updateEditingEpisode(seasonIndex, episodeIndex, 'videoUrl', e.target.files[0].name);
+                                    }
+                                  }}
+                                />
+                                <div className="input-hint">
+                                  Або введіть URL відео:
+                                </div>
+                                <input
+                                  type="url"
+                                  value={episode.videoUrl || ''}
+                                  onChange={(e) => updateEditingEpisode(seasonIndex, episodeIndex, 'videoUrl', e.target.value)}
+                                  placeholder="https://example.com/video.mp4"
+                                  className="form-input"
+                                />
+                                {episode.videoUrl && (
+                                  <div className="current-file">
+                                    <p>Поточне відео: {episode.videoUrl}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
                 
