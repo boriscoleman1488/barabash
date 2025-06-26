@@ -12,6 +12,7 @@ const {
   getAllMovies,
   searchMovies,
   getMoviesByGenre,
+  getMoviesByCategory,
   getMoviesStats
 } = require('./movie.controller');
 
@@ -20,6 +21,7 @@ router.get('/', getAllMovies);
 router.get('/search', searchMovies);
 router.get('/stats', getMoviesStats);
 router.get('/genre/:genre', getMoviesByGenre);
+router.get('/category/:category', getMoviesByCategory);
 router.get('/:id', getMovie);
 
 // Захищені маршрути (тільки для адміністраторів)

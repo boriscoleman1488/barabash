@@ -9,14 +9,16 @@ const {
   updateGenre,
   deleteGenre,
   toggleGenreStatus,
-  updateGenreOrder
+  updateGenreOrder,
+  searchGenres
 } = require('./genre.controller');
 
-
-
+// Публічні маршрути
 router.get('/', getAllGenres);
+router.get('/search', searchGenres);
 router.get('/:id', getGenreById);
 
+// Захищені маршрути (тільки для адміністраторів)
 router.post('/', adminAuth, createGenre);
 router.put('/:id', adminAuth, updateGenre);
 router.delete('/:id', adminAuth, deleteGenre);

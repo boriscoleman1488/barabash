@@ -1,4 +1,6 @@
 const Movie = require('../models/Movie');
+const Genre = require('../models/Genre');
+const Category = require('../models/Category');
 const { deleteFromCloudinary, getPublicIdFromUrl } = require('../config/cloudinary');
 
 const createMovie = async (req, res) => {
@@ -48,15 +50,44 @@ const createMovie = async (req, res) => {
       movieData.rating = parseFloat(movieData.rating) || 0;
     }
 
-    // Обробка жанрів
+    // Обробка жанрів - перетворюємо назви в ObjectId
     if (movieData.genres) {
+      let genreNames = [];
       if (typeof movieData.genres === 'string') {
         try {
-          movieData.genres = JSON.parse(movieData.genres);
+          genreNames = JSON.parse(movieData.genres);
         } catch {
-          movieData.genres = movieData.genres.split(',').map(g => g.trim());
+          genreNames = movieData.genres.split(',').map(g => g.trim());
         }
+      } else if (Array.isArray(movieData.genres)) {
+        genreNames = movieData.genres;
       }
+
+      // Знаходимо ObjectId жанрів за їх назвами
+      const genreObjects = await Genre.find({ name: { $in: genreNames } });
+      movieData.genres = genreObjects.map(genre => genre._id);
+      
+      console.log('Знайдені жанри:', genreObjects.map(g => ({ name: g.name, id: g._id })));
+    }
+
+    // Обробка категорій - перетворюємо назви в ObjectId
+    if (movieData.categories) {
+      let categoryNames = [];
+      if (typeof movieData.categories === 'string') {
+        try {
+          categoryNames = JSON.parse(movieData.categories);
+        } catch {
+          categoryNames = movieData.categories.split(',').map(c => c.trim());
+        }
+      } else if (Array.isArray(movieData.categories)) {
+        categoryNames = movieData.categories;
+      }
+
+      // Знаходимо ObjectId категорій за їх назвами
+      const categoryObjects = await Category.find({ name: { $in: categoryNames } });
+      movieData.categories = categoryObjects.map(category => category._id);
+      
+      console.log('Знайдені категорії:', categoryObjects.map(c => ({ name: c.name, id: c._id })));
     }
 
     // Обробка акторів
@@ -97,6 +128,9 @@ const createMovie = async (req, res) => {
 
     const newMovie = new Movie(movieData);
     const savedMovie = await newMovie.save();
+
+    // Заповнюємо дані про жанри та категорії для відповіді
+    await savedMovie.populate('genres categories');
 
     res.status(201).json({
       success: true,
@@ -145,37 +179,44 @@ const updateMovie = async (req, res) => {
       }
     }
 
-    // Обробка жанрів та акторів
-    if (updateData.genres && typeof updateData.genres === 'string') {
-      try {
-        updateData.genres = JSON.parse(updateData.genres);
-      } catch {
-        updateData.genres = updateData.genres.split(',').map(g => g.trim());
+    // Обробка жанрів - перетворюємо назви в ObjectId
+    if (updateData.genres) {
+      let genreNames = [];
+      if (typeof updateData.genres === 'string') {
+        try {
+          genreNames = JSON.parse(updateData.genres);
+        } catch {
+          genreNames = updateData.genres.split(',').map(g => g.trim());
+        }
+      } else if (Array.isArray(updateData.genres)) {
+        genreNames = updateData.genres;
       }
+
+      // Знаходимо ObjectId жанрів за їх назвами
+      const genreObjects = await Genre.find({ name: { $in: genreNames } });
+      updateData.genres = genreObjects.map(genre => genre._id);
+    }
+
+    // Обробка категорій - перетворюємо назви в ObjectId
+    if (updateData.categories) {
+      let categoryNames = [];
+      if (typeof updateData.categories === 'string') {
+        try {
+          categoryNames = JSON.parse(updateData.categories);
+        } catch {
+          categoryNames = updateData.categories.split(',').map(c => c.trim());
+        }
+      } else if (Array.isArray(updateData.categories)) {
+        categoryNames = updateData.categories;
+      }
+
+      // Знаходимо ObjectId категорій за їх назвами
+      const categoryObjects = await Category.find({ name: { $in: categoryNames } });
+      updateData.categories = categoryObjects.map(category => category._id);
     }
     
     if (updateData.cast && typeof updateData.cast === 'string') {
       updateData.cast = updateData.cast.split(',').map(c => c.trim());
-    }
-
-    if (updateData.categories) {
-      if (typeof updateData.categories === 'string') {
-        try {
-          // Якщо це JSON рядок
-          const parsed = JSON.parse(updateData.categories);
-          updateData.categories = parsed.filter(cat => cat && cat.trim() !== '');
-        } catch {
-          // Якщо це звичайний рядок, розділений комами
-          updateData.categories = updateData.categories
-            .split(',')
-            .map(cat => cat.trim())
-            .filter(cat => cat !== '');
-        }
-      }
-      // Видаляємо пусті значення
-      if (Array.isArray(updateData.categories)) {
-        updateData.categories = updateData.categories.filter(cat => cat && cat !== '');
-      }
     }
 
     // Обробка числових полів
@@ -225,7 +266,8 @@ const updateMovie = async (req, res) => {
     console.log('updateData:', JSON.stringify(updateData, null, 2));
     console.log('=== КІНЕЦЬ ДАНИХ ===');
 
-    const updatedMovie = await Movie.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedMovie = await Movie.findByIdAndUpdate(id, updateData, { new: true })
+      .populate('genres categories');
 
     // Видаляємо старі файли з Cloudinary
     for (const publicId of filesToDelete) {
@@ -302,7 +344,9 @@ const deleteMovie = async (req, res) => {
 
 const getMovie = async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    const movie = await Movie.findById(req.params.id)
+      .populate('genres', 'name description')
+      .populate('categories', 'name description type');
     
     if (!movie) {
       return res.status(404).json({
@@ -328,6 +372,7 @@ const getAllMovies = async (req, res) => {
   try {
     const { 
       genre, 
+      category,
       type, 
       page = 1, 
       limit = 10, 
@@ -338,8 +383,28 @@ const getAllMovies = async (req, res) => {
 
     let query = {};
     
+    // Фільтрація за жанром (за ObjectId або назвою)
     if (genre) {
-      query.genres = { $in: [genre] };
+      // Спочатку спробуємо знайти жанр за назвою
+      const genreObj = await Genre.findOne({ name: new RegExp(genre, 'i') });
+      if (genreObj) {
+        query.genres = genreObj._id;
+      } else {
+        // Якщо не знайшли за назвою, спробуємо за ObjectId
+        query.genres = genre;
+      }
+    }
+
+    // Фільтрація за категорією (за ObjectId або назвою)
+    if (category) {
+      // Спочатку спробуємо знайти категорію за назвою
+      const categoryObj = await Category.findOne({ name: new RegExp(category, 'i') });
+      if (categoryObj) {
+        query.categories = categoryObj._id;
+      } else {
+        // Якщо не знайшли за назвою, спробуємо за ObjectId
+        query.categories = category;
+      }
     }
     
     if (type) {
@@ -353,8 +418,7 @@ const getAllMovies = async (req, res) => {
         { title: searchRegex },
         { description: searchRegex },
         { director: searchRegex },
-        { cast: { $in: [searchRegex] } },
-        { genres: { $in: [searchRegex] } }
+        { cast: { $in: [searchRegex] } }
       ];
     }
 
@@ -363,6 +427,8 @@ const getAllMovies = async (req, res) => {
     sortOptions[sortBy] = sortOrder === 'desc' ? -1 : 1;
     
     const movies = await Movie.find(query)
+      .populate('genres', 'name description')
+      .populate('categories', 'name description type')
       .sort(sortOptions)
       .skip(skip)
       .limit(parseInt(limit));
@@ -400,19 +466,27 @@ const searchMovies = async (req, res) => {
 
     // Використовуємо регулярні вирази замість текстового пошуку
     const searchRegex = new RegExp(q, 'i');
+    
+    // Шукаємо жанри та категорії за назвою
+    const matchingGenres = await Genre.find({ name: searchRegex });
+    const matchingCategories = await Category.find({ name: searchRegex });
+    
     const query = {
       $or: [
         { title: searchRegex },
         { description: searchRegex },
         { director: searchRegex },
         { cast: { $in: [searchRegex] } },
-        { genres: { $in: [searchRegex] } }
+        { genres: { $in: matchingGenres.map(g => g._id) } },
+        { categories: { $in: matchingCategories.map(c => c._id) } }
       ]
     };
 
     const skip = (page - 1) * limit;
     
     const movies = await Movie.find(query)
+      .populate('genres', 'name description')
+      .populate('categories', 'name description type')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -442,10 +516,29 @@ const getMoviesByGenre = async (req, res) => {
     const { genre } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
-    const query = { genres: { $in: [genre] } };
+    // Знаходимо жанр за назвою або ObjectId
+    let genreObj;
+    if (genre.match(/^[0-9a-fA-F]{24}$/)) {
+      // Якщо це ObjectId
+      genreObj = await Genre.findById(genre);
+    } else {
+      // Якщо це назва жанру
+      genreObj = await Genre.findOne({ name: new RegExp(genre, 'i') });
+    }
+
+    if (!genreObj) {
+      return res.status(404).json({
+        success: false,
+        message: 'Жанр не знайдено'
+      });
+    }
+
+    const query = { genres: genreObj._id };
     const skip = (page - 1) * limit;
     
     const movies = await Movie.find(query)
+      .populate('genres', 'name description')
+      .populate('categories', 'name description type')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -454,7 +547,7 @@ const getMoviesByGenre = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      genre,
+      genre: genreObj,
       movies,
       pagination: {
         current: parseInt(page),
@@ -471,15 +564,107 @@ const getMoviesByGenre = async (req, res) => {
   }
 };
 
+const getMoviesByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    // Знаходимо категорію за назвою або ObjectId
+    let categoryObj;
+    if (category.match(/^[0-9a-fA-F]{24}$/)) {
+      // Якщо це ObjectId
+      categoryObj = await Category.findById(category);
+    } else {
+      // Якщо це назва категорії
+      categoryObj = await Category.findOne({ name: new RegExp(category, 'i') });
+    }
+
+    if (!categoryObj) {
+      return res.status(404).json({
+        success: false,
+        message: 'Категорію не знайдено'
+      });
+    }
+
+    const query = { categories: categoryObj._id };
+    const skip = (page - 1) * limit;
+    
+    const movies = await Movie.find(query)
+      .populate('genres', 'name description')
+      .populate('categories', 'name description type')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Movie.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      category: categoryObj,
+      movies,
+      pagination: {
+        current: parseInt(page),
+        pages: Math.ceil(total / limit),
+        total
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Помилка отримання фільмів за категорією',
+      error: error.message
+    });
+  }
+};
+
 const getMoviesStats = async (req, res) => {
   try {
     const totalMovies = await Movie.countDocuments();
     const totalSeries = await Movie.countDocuments({ type: 'series' });
     const totalFilms = await Movie.countDocuments({ type: 'movie' });
     
+    // Статистика по жанрах з назвами
     const genreStats = await Movie.aggregate([
       { $unwind: '$genres' },
-      { $group: { _id: '$genres', count: { $sum: 1 } } },
+      {
+        $lookup: {
+          from: 'genres',
+          localField: 'genres',
+          foreignField: '_id',
+          as: 'genreInfo'
+        }
+      },
+      { $unwind: '$genreInfo' },
+      {
+        $group: {
+          _id: '$genreInfo._id',
+          name: { $first: '$genreInfo.name' },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Статистика по категоріях з назвами
+    const categoryStats = await Movie.aggregate([
+      { $unwind: '$categories' },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categories',
+          foreignField: '_id',
+          as: 'categoryInfo'
+        }
+      },
+      { $unwind: '$categoryInfo' },
+      {
+        $group: {
+          _id: '$categoryInfo._id',
+          name: { $first: '$categoryInfo.name' },
+          count: { $sum: 1 }
+        }
+      },
       { $sort: { count: -1 } },
       { $limit: 10 }
     ]);
@@ -497,6 +682,7 @@ const getMoviesStats = async (req, res) => {
         movies: totalFilms,
         series: totalSeries,
         topGenres: genreStats,
+        topCategories: categoryStats,
         yearDistribution: yearStats
       }
     });
@@ -517,5 +703,6 @@ module.exports = {
   getAllMovies,
   searchMovies,
   getMoviesByGenre,
+  getMoviesByCategory,
   getMoviesStats
 };

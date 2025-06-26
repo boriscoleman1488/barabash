@@ -85,8 +85,7 @@ exports.getAllCategories = async (req, res) => {
 
 exports.getCategoryById = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id)
-      .populate('movies', 'title posterImage duration releaseYear genres');
+    const category = await Category.findById(req.params.id);
     
     if (!category) {
       return res.status(404).json({ 
@@ -95,9 +94,18 @@ exports.getCategoryById = async (req, res) => {
       });
     }
 
+    // Отримуємо фільми цієї категорії
+    const movies = await Movie.find({ categories: category._id })
+      .populate('genres', 'name')
+      .select('title posterImage duration releaseYear genres type');
+
     res.json({
       success: true,
-      category
+      category: {
+        ...category.toObject(),
+        moviesCount: movies.length
+      },
+      movies
     });
   } catch (error) {
     res.status(500).json({ 
@@ -136,7 +144,7 @@ exports.updateCategory = async (req, res) => {
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    ).populate('movies', 'title posterImage');
+    );
 
     if (!category) {
       return res.status(404).json({ 
@@ -161,7 +169,7 @@ exports.updateCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
   try {
-    const category = await Category.findByIdAndDelete(req.params.id);
+    const category = await Category.findById(req.params.id);
     
     if (!category) {
       return res.status(404).json({ 
@@ -169,6 +177,18 @@ exports.deleteCategory = async (req, res) => {
         message: 'Категорію не знайдено' 
       });
     }
+
+    // Перевіряємо чи є фільми в цій категорії
+    const moviesCount = await Movie.countDocuments({ categories: category._id });
+    
+    if (moviesCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Неможливо видалити категорію. В ній є ${moviesCount} фільм(ів). Спочатку видаліть або перемістіть фільми.`
+      });
+    }
+
+    await Category.findByIdAndDelete(req.params.id);
 
     res.json({ 
       success: true,
@@ -211,95 +231,12 @@ exports.toggleCategoryStatus = async (req, res) => {
   }
 };
 
-exports.addMovieToCategory = async (req, res) => {
-  try {
-    const { movieId } = req.body;
-    
-    const movie = await Movie.findById(movieId);
-    if (!movie) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Фільм не знайдено' 
-      });
-    }
-
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Категорію не знайдено' 
-      });
-    }
-
-    if (category.movies.includes(movieId)) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Фільм вже додано до цієї категорії' 
-      });
-    }
-
-    category.movies.push(movieId);
-    await category.save();
-
-    await category.populate('movies', 'title posterImage');
-    res.json({ 
-      success: true,
-      message: 'Фільм додано до категорії', 
-      category 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false,
-      message: 'Помилка додавання фільму до категорії', 
-      error: error.message 
-    });
-  }
-};
-
-exports.removeMovieFromCategory = async (req, res) => {
-  try {
-    const { movieId } = req.params;
-    
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Категорію не знайдено' 
-      });
-    }
-
-    category.movies = category.movies.filter(id => id.toString() !== movieId);
-    await category.save();
-
-    await category.populate('movies', 'title posterImage');
-    res.json({ 
-      success: true,
-      message: 'Фільм видалено з категорії', 
-      category 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false,
-      message: 'Помилка видалення фільму з категорії', 
-      error: error.message 
-    });
-  }
-};
-
 exports.getCategoryMovies = async (req, res) => {
   try {
     const { page = 1, limit = 12 } = req.query;
     const skip = (page - 1) * limit;
 
-    const category = await Category.findById(req.params.id)
-      .populate({
-        path: 'movies',
-        select: 'title description posterImage duration releaseYear genres',
-        options: {
-          skip: skip,
-          limit: parseInt(limit)
-        }
-      });
+    const category = await Category.findById(req.params.id);
 
     if (!category) {
       return res.status(404).json({ 
@@ -308,8 +245,14 @@ exports.getCategoryMovies = async (req, res) => {
       });
     }
 
-    const totalMovies = await Category.findById(req.params.id).select('movies');
-    const total = totalMovies.movies.length;
+    const movies = await Movie.find({ categories: category._id })
+      .populate('genres', 'name')
+      .select('title description posterImage duration releaseYear genres type')
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const total = await Movie.countDocuments({ categories: category._id });
 
     res.json({
       success: true,
@@ -319,7 +262,7 @@ exports.getCategoryMovies = async (req, res) => {
         description: category.description,
         type: category.type
       },
-      movies: category.movies,
+      movies,
       pagination: {
         current: parseInt(page),
         pages: Math.ceil(total / limit),
@@ -357,18 +300,108 @@ exports.searchCategories = async (req, res) => {
     if (type) filter.type = type;
 
     const categories = await Category.find(filter)
-      .populate('movies', 'title posterImage')
       .sort({ createdAt: -1 })
       .limit(20);
 
+    // Додаємо кількість фільмів для кожної категорії
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (category) => {
+        const moviesCount = await Movie.countDocuments({ categories: category._id });
+        return {
+          ...category.toObject(),
+          moviesCount
+        };
+      })
+    );
+
     res.json({
       success: true,
-      categories
+      categories: categoriesWithCount
     });
   } catch (error) {
     res.status(500).json({ 
       success: false,
       message: 'Помилка пошуку категорій', 
+      error: error.message 
+    });
+  }
+};
+
+// Додавання фільму до категорії
+exports.addMovieToCategory = async (req, res) => {
+  try {
+    const { movieId } = req.body;
+    const categoryId = req.params.id;
+    
+    const movie = await Movie.findById(movieId);
+    if (!movie) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Фільм не знайдено' 
+      });
+    }
+
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
+    }
+
+    // Перевіряємо чи фільм вже в цій категорії
+    if (movie.categories.includes(categoryId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Фільм вже додано до цієї категорії' 
+      });
+    }
+
+    // Додаємо категорію до фільму
+    movie.categories.push(categoryId);
+    await movie.save();
+
+    res.json({ 
+      success: true,
+      message: 'Фільм додано до категорії',
+      movie: await movie.populate('categories genres')
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка додавання фільму до категорії', 
+      error: error.message 
+    });
+  }
+};
+
+// Видалення фільму з категорії
+exports.removeMovieFromCategory = async (req, res) => {
+  try {
+    const { movieId } = req.params;
+    const categoryId = req.params.id;
+    
+    const movie = await Movie.findById(movieId);
+    if (!movie) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Фільм не знайдено' 
+      });
+    }
+
+    // Видаляємо категорію з фільму
+    movie.categories = movie.categories.filter(cat => cat.toString() !== categoryId);
+    await movie.save();
+
+    res.json({ 
+      success: true,
+      message: 'Фільм видалено з категорії',
+      movie: await movie.populate('categories genres')
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка видалення фільму з категорії', 
       error: error.message 
     });
   }

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { movieAPI } from "../../api/movieAPI";
 import { genreAPI } from "../../api/genreAPI";
+import { categoryAPI } from "../../api/categoryAPI";
 import "../../styles/admin-common.css";
 
 export default function Movies() {
   const [movies, setMovies] = useState([]);
   const [genres, setGenres] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,6 +25,7 @@ export default function Movies() {
     film_language: "",
     ageRating: "PG",
     genres: [],
+    categories: [],
     director: "",
     cast: "",
     type: "movie",
@@ -122,6 +125,17 @@ export default function Movies() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const data = await categoryAPI.getAll(1, 100);
+      if (data.success) {
+        setCategories(data.categories || []);
+      }
+    } catch (err) {
+      console.error('Fetch categories error:', err);
+    }
+  };
+
   const handleCreateMovie = async (e) => {
     e.preventDefault();
     try {
@@ -135,10 +149,19 @@ export default function Movies() {
             : newMovie.cast;
           formData.append(key, castString);
         } else if (key === 'genres') {
-          const genresString = Array.isArray(newMovie.genres) 
-            ? newMovie.genres.join(', ') 
-            : newMovie.genres;
-          formData.append(key, genresString);
+          // Відправляємо назви жанрів
+          const genreNames = newMovie.genres.map(genreId => {
+            const genre = genres.find(g => g._id === genreId);
+            return genre ? genre.name : genreId;
+          });
+          formData.append(key, JSON.stringify(genreNames));
+        } else if (key === 'categories') {
+          // Відправляємо назви категорій
+          const categoryNames = newMovie.categories.map(categoryId => {
+            const category = categories.find(c => c._id === categoryId);
+            return category ? category.name : categoryId;
+          });
+          formData.append(key, JSON.stringify(categoryNames));
         } else if (key === 'pricing') {
           formData.append('pricing.buyPrice', newMovie.pricing.buyPrice || 0);
           formData.append('pricing.isFree', newMovie.pricing.isFree || false);
@@ -173,6 +196,7 @@ export default function Movies() {
           film_language: "",
           ageRating: "PG",
           genres: [],
+          categories: [],
           director: "",
           cast: "",
           type: "movie",
@@ -212,7 +236,17 @@ export default function Movies() {
             : editingMovie.cast || '';
           formData.append(key, castValue);
         } else if (key === 'genres') {
-          formData.append(key, JSON.stringify(editingMovie.genres || []));
+          // Відправляємо назви жанрів
+          const genreNames = editingMovie.genres.map(genre => {
+            return typeof genre === 'object' ? genre.name : genre;
+          });
+          formData.append(key, JSON.stringify(genreNames));
+        } else if (key === 'categories') {
+          // Відправляємо назви категорій
+          const categoryNames = editingMovie.categories.map(category => {
+            return typeof category === 'object' ? category.name : category;
+          });
+          formData.append(key, JSON.stringify(categoryNames));
         } else if (key === 'pricing') {
           formData.append('pricing', JSON.stringify(editingMovie.pricing || { buyPrice: 0, isFree: true }));
         } else if (key === 'seasons') {
@@ -369,6 +403,7 @@ export default function Movies() {
   useEffect(() => {
     fetchMovies();
     fetchGenres();
+    fetchCategories();
   }, []);
 
   return (
@@ -450,6 +485,7 @@ export default function Movies() {
                     <th>Рік</th>
                     <th>Тривалість</th>
                     <th>Жанри</th>
+                    <th>Категорії</th>
                     <th>Мова</th>
                     <th>Тип</th>
                     <th>Ціна</th>
@@ -485,12 +521,26 @@ export default function Movies() {
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {movie.genres && movie.genres.slice(0, 2).map((genre, index) => (
                             <span key={index} className="badge badge-info" style={{ fontSize: '10px' }}>
-                              {genre}
+                              {typeof genre === 'object' ? genre.name : genre}
                             </span>
                           ))}
                           {movie.genres && movie.genres.length > 2 && (
                             <span className="badge badge-secondary" style={{ fontSize: '10px' }}>
                               +{movie.genres.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {movie.categories && movie.categories.slice(0, 2).map((category, index) => (
+                            <span key={index} className="badge badge-warning" style={{ fontSize: '10px' }}>
+                              {typeof category === 'object' ? category.name : category}
+                            </span>
+                          ))}
+                          {movie.categories && movie.categories.length > 2 && (
+                            <span className="badge badge-secondary" style={{ fontSize: '10px' }}>
+                              +{movie.categories.length - 2}
                             </span>
                           )}
                         </div>
@@ -810,22 +860,50 @@ export default function Movies() {
                       <label key={genre._id} className="checkbox-group">
                         <input
                           type="checkbox"
-                          checked={newMovie.genres.includes(genre.name)}
+                          checked={newMovie.genres.includes(genre._id)}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setNewMovie({
                                 ...newMovie,
-                                genres: [...newMovie.genres, genre.name]
+                                genres: [...newMovie.genres, genre._id]
                               });
                             } else {
                               setNewMovie({
                                 ...newMovie,
-                                genres: newMovie.genres.filter(g => g !== genre.name)
+                                genres: newMovie.genres.filter(g => g !== genre._id)
                               });
                             }
                           }}
                         />
                         <span className="form-label" style={{ margin: 0 }}>{genre.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Категорії</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px', maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px' }}>
+                    {categories.map((category) => (
+                      <label key={category._id} className="checkbox-group">
+                        <input
+                          type="checkbox"
+                          checked={newMovie.categories.includes(category._id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewMovie({
+                                ...newMovie,
+                                categories: [...newMovie.categories, category._id]
+                              });
+                            } else {
+                              setNewMovie({
+                                ...newMovie,
+                                categories: newMovie.categories.filter(c => c !== category._id)
+                              });
+                            }
+                          }}
+                        />
+                        <span className="form-label" style={{ margin: 0 }}>{category.name}</span>
                       </label>
                     ))}
                   </div>
@@ -1171,29 +1249,74 @@ export default function Movies() {
                 <div className="form-group">
                   <label className="form-label">Жанри</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px', maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px' }}>
-                    {genres.map((genre) => (
-                      <label key={genre._id} className="checkbox-group">
-                        <input
-                          type="checkbox"
-                          checked={editingMovie.genres && editingMovie.genres.includes(genre.name)}
-                          onChange={(e) => {
-                            const currentGenres = editingMovie.genres || [];
-                            if (e.target.checked) {
-                              setEditingMovie({
-                                ...editingMovie,
-                                genres: [...currentGenres, genre.name]
-                              });
-                            } else {
-                              setEditingMovie({
-                                ...editingMovie,
-                                genres: currentGenres.filter(g => g !== genre.name)
-                              });
-                            }
-                          }}
-                        />
-                        <span className="form-label" style={{ margin: 0 }}>{genre.name}</span>
-                      </label>
-                    ))}
+                    {genres.map((genre) => {
+                      const isChecked = editingMovie.genres && editingMovie.genres.some(g => 
+                        (typeof g === 'object' ? g._id : g) === genre._id
+                      );
+                      
+                      return (
+                        <label key={genre._id} className="checkbox-group">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const currentGenres = editingMovie.genres || [];
+                              if (e.target.checked) {
+                                setEditingMovie({
+                                  ...editingMovie,
+                                  genres: [...currentGenres, genre]
+                                });
+                              } else {
+                                setEditingMovie({
+                                  ...editingMovie,
+                                  genres: currentGenres.filter(g => 
+                                    (typeof g === 'object' ? g._id : g) !== genre._id
+                                  )
+                                });
+                              }
+                            }}
+                          />
+                          <span className="form-label" style={{ margin: 0 }}>{genre.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Категорії</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '8px', maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border-color)', padding: '8px', borderRadius: '4px' }}>
+                    {categories.map((category) => {
+                      const isChecked = editingMovie.categories && editingMovie.categories.some(c => 
+                        (typeof c === 'object' ? c._id : c) === category._id
+                      );
+                      
+                      return (
+                        <label key={category._id} className="checkbox-group">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              const currentCategories = editingMovie.categories || [];
+                              if (e.target.checked) {
+                                setEditingMovie({
+                                  ...editingMovie,
+                                  categories: [...currentCategories, category]
+                                });
+                              } else {
+                                setEditingMovie({
+                                  ...editingMovie,
+                                  categories: currentCategories.filter(c => 
+                                    (typeof c === 'object' ? c._id : c) !== category._id
+                                  )
+                                });
+                              }
+                            }}
+                          />
+                          <span className="form-label" style={{ margin: 0 }}>{category.name}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
                 

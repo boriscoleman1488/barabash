@@ -1,4 +1,5 @@
 const Genre = require('../models/Genre');
+const Movie = require('../models/Movie');
 
 const createGenre = async (req, res) => {
   try {
@@ -85,7 +86,7 @@ const updateGenre = async (req, res) => {
 
 const getAllGenres = async (req, res) => {
   try {
-    const { active, page = 1, limit = 10 } = req.query;
+    const { active, page = 1, limit = 10, withMovieCount = false } = req.query;
     
     let filter = {};
     if (active !== undefined) {
@@ -100,12 +101,26 @@ const getAllGenres = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
     
+    // Додаємо кількість фільмів для кожного жанру, якщо потрібно
+    let genresWithCount = genres;
+    if (withMovieCount === 'true') {
+      genresWithCount = await Promise.all(
+        genres.map(async (genre) => {
+          const moviesCount = await Movie.countDocuments({ genres: genre._id });
+          return {
+            ...genre.toObject(),
+            moviesCount
+          };
+        })
+      );
+    }
+    
     const total = await Genre.countDocuments(filter);
     
     res.status(200).json({
       success: true,
       count: genres.length,
-      genres,
+      genres: genresWithCount,
       pagination: {
         current: parseInt(page),
         pages: Math.ceil(total / limit),
@@ -131,10 +146,19 @@ const getGenreById = async (req, res) => {
         message: "Жанр не знайдено"
       });
     }
+
+    // Отримуємо фільми цього жанру
+    const movies = await Movie.find({ genres: genre._id })
+      .populate('categories', 'name')
+      .select('title posterImage duration releaseYear categories type');
     
     res.status(200).json({
       success: true,
-      genre
+      genre: {
+        ...genre.toObject(),
+        moviesCount: movies.length
+      },
+      movies
     });
   } catch (error) {
     res.status(500).json({
@@ -147,7 +171,7 @@ const getGenreById = async (req, res) => {
 
 const deleteGenre = async (req, res) => {
   try {
-    const genre = await Genre.findByIdAndDelete(req.params.id);
+    const genre = await Genre.findById(req.params.id);
     
     if (!genre) {
       return res.status(404).json({
@@ -155,6 +179,18 @@ const deleteGenre = async (req, res) => {
         message: "Жанр не знайдено"
       });
     }
+
+    // Перевіряємо чи є фільми з цим жанром
+    const moviesCount = await Movie.countDocuments({ genres: genre._id });
+    
+    if (moviesCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Неможливо видалити жанр. З ним пов'язано ${moviesCount} фільм(ів). Спочатку видаліть або змініть жанр у фільмах.`
+      });
+    }
+    
+    await Genre.findByIdAndDelete(req.params.id);
     
     res.status(200).json({
       success: true,
@@ -220,6 +256,54 @@ const updateGenreOrder = async (req, res) => {
   }
 };
 
+// Пошук жанрів
+const searchGenres = async (req, res) => {
+  try {
+    const { q, isActive = true } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Параметр пошуку обов\'язковий'
+      });
+    }
+
+    const filter = {
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } }
+      ],
+      isActive: isActive === 'true'
+    };
+
+    const genres = await Genre.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    // Додаємо кількість фільмів для кожного жанру
+    const genresWithCount = await Promise.all(
+      genres.map(async (genre) => {
+        const moviesCount = await Movie.countDocuments({ genres: genre._id });
+        return {
+          ...genre.toObject(),
+          moviesCount
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      genres: genresWithCount
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Помилка пошуку жанрів',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createGenre,
   getAllGenres,
@@ -227,5 +311,6 @@ module.exports = {
   updateGenre,
   deleteGenre,
   toggleGenreStatus,
-  updateGenreOrder
+  updateGenreOrder,
+  searchGenres
 };
