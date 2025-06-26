@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../authContext/AuthContext';
 import Navbar from '../../components/navbar/Navbar';
-import axios from 'axios';
+import { userAPI } from '../../api/userAPI';
+import { paymentAPI } from '../../api/paymentAPI';
 import './Profile.scss';
 
 const Profile = () => {
@@ -16,16 +17,6 @@ const Profile = () => {
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({});
 
-  const API_BASE_URL = "http://localhost:5000/api";
-
-  // Створюємо axios instance з токеном
-  const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'token': `Bearer ${user?.accessToken}`
-    }
-  });
-
   useEffect(() => {
     if (user?.accessToken) {
       fetchProfileData();
@@ -35,15 +26,15 @@ const Profile = () => {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/users/profile');
+      const data = await userAPI.getProfile();
       
-      if (response.data.success) {
-        setProfileData(response.data.user);
+      if (data.success) {
+        setProfileData(data.user);
         setEditData({
-          firstName: response.data.user.firstName || '',
-          lastName: response.data.user.lastName || '',
-          username: response.data.user.username || '',
-          email: response.data.user.email || ''
+          firstName: data.user.firstName || '',
+          lastName: data.user.lastName || '',
+          username: data.user.username || '',
+          email: data.user.email || ''
         });
       }
     } catch (err) {
@@ -56,9 +47,9 @@ const Profile = () => {
 
   const fetchFavoriteMovies = async () => {
     try {
-      const response = await apiClient.get('/users/favorites');
-      if (response.data.success) {
-        setFavoriteMovies(response.data.movies);
+      const data = await userAPI.getFavorites();
+      if (data.success) {
+        setFavoriteMovies(data.movies);
       }
     } catch (err) {
       console.error('Error fetching favorites:', err);
@@ -67,9 +58,9 @@ const Profile = () => {
 
   const fetchPurchasedMovies = async () => {
     try {
-      const response = await apiClient.get('/users/purchased');
-      if (response.data.success) {
-        setPurchasedMovies(response.data.movies);
+      const data = await userAPI.getPurchased();
+      if (data.success) {
+        setPurchasedMovies(data.movies);
       }
     } catch (err) {
       console.error('Error fetching purchased movies:', err);
@@ -78,9 +69,9 @@ const Profile = () => {
 
   const fetchPayments = async () => {
     try {
-      const response = await apiClient.get('/payments/my');
-      if (response.data.success) {
-        setPayments(response.data.payments);
+      const data = await paymentAPI.getUserPayments();
+      if (data.success) {
+        setPayments(data.payments);
       }
     } catch (err) {
       console.error('Error fetching payments:', err);
@@ -89,8 +80,8 @@ const Profile = () => {
 
   const removeFromFavorites = async (movieId) => {
     try {
-      const response = await apiClient.delete(`/users/favorites/${movieId}`);
-      if (response.data.success) {
+      const data = await userAPI.removeFromFavorites(movieId);
+      if (data.success) {
         setFavoriteMovies(prev => prev.filter(movie => movie._id !== movieId));
       }
     } catch (err) {
@@ -113,9 +104,9 @@ const Profile = () => {
   const handleEditProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await apiClient.put(`/users/${profileData._id}`, editData);
-      if (response.data.success) {
-        setProfileData(response.data.user);
+      const data = await userAPI.updateProfile(profileData._id, editData);
+      if (data.success) {
+        setProfileData(data.user);
         setEditMode(false);
         alert('Профіль успішно оновлено!');
       }

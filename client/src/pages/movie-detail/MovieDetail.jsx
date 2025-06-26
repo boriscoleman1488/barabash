@@ -2,7 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../authContext/AuthContext';
 import Navbar from '../../components/navbar/Navbar';
-import axios from 'axios';
+import { movieAPI } from '../../api/movieAPI';
+import { userAPI } from '../../api/userAPI';
+import { commentAPI } from '../../api/commentAPI';
 import './MovieDetail.scss';
 
 const MovieDetail = () => {
@@ -22,16 +24,6 @@ const MovieDetail = () => {
   const [accessInfo, setAccessInfo] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
-  const API_BASE_URL = "http://localhost:5000/api";
-
-  // Створюємо axios instance з токеном
-  const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'token': `Bearer ${user?.accessToken}`
-    }
-  });
-
   useEffect(() => {
     if (user?.accessToken && id) {
       fetchMovieDetails();
@@ -43,10 +35,10 @@ const MovieDetail = () => {
   const fetchMovieDetails = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get(`/movies/${id}`);
+      const data = await movieAPI.getById(id);
       
-      if (response.data.success) {
-        setMovie(response.data.movie);
+      if (data.success) {
+        setMovie(data.movie);
         setError('');
       } else {
         setError('Фільм не знайдено');
@@ -62,10 +54,10 @@ const MovieDetail = () => {
   const fetchComments = async () => {
     try {
       setCommentsLoading(true);
-      const response = await apiClient.get(`/comments/movie/${id}`);
+      const data = await commentAPI.getMovieComments(id);
       
-      if (response.data.comments) {
-        setComments(response.data.comments);
+      if (data.comments) {
+        setComments(data.comments);
       }
     } catch (err) {
       console.error('Error fetching comments:', err);
@@ -76,10 +68,10 @@ const MovieDetail = () => {
 
   const checkMovieAccess = async () => {
     try {
-      const response = await apiClient.get(`/users/access/${id}`);
-      if (response.data.success) {
-        setHasAccess(response.data.hasAccess);
-        setAccessInfo(response.data);
+      const data = await userAPI.checkAccess(id);
+      if (data.success) {
+        setHasAccess(data.hasAccess);
+        setAccessInfo(data);
       }
     } catch (err) {
       console.error('Error checking access:', err);
@@ -88,8 +80,8 @@ const MovieDetail = () => {
 
   const addToFavorites = async () => {
     try {
-      const response = await apiClient.post('/users/favorites', { movieId: id });
-      if (response.data.success) {
+      const data = await userAPI.addToFavorites(id);
+      if (data.success) {
         setIsFavorite(true);
         alert('Фільм додано до улюблених!');
       }
@@ -101,8 +93,8 @@ const MovieDetail = () => {
 
   const removeFromFavorites = async () => {
     try {
-      const response = await apiClient.delete(`/users/favorites/${id}`);
-      if (response.data.success) {
+      const data = await userAPI.removeFromFavorites(id);
+      if (data.success) {
         setIsFavorite(false);
         alert('Фільм видалено з улюблених');
       }
@@ -116,13 +108,13 @@ const MovieDetail = () => {
     if (!newComment.trim()) return;
 
     try {
-      const response = await apiClient.post('/comments', {
+      const data = await commentAPI.create({
         movieId: id,
         content: newComment.trim()
       });
 
-      if (response.data) {
-        setComments(prev => [response.data, ...prev]);
+      if (data) {
+        setComments(prev => [data, ...prev]);
         setNewComment('');
       }
     } catch (err) {
@@ -135,8 +127,8 @@ const MovieDetail = () => {
     if (!window.confirm('Ви впевнені, що хочете видалити цей коментар?')) return;
 
     try {
-      const response = await apiClient.delete(`/comments/${commentId}`);
-      if (response.data) {
+      const data = await commentAPI.delete(commentId);
+      if (data) {
         setComments(prev => prev.filter(comment => comment._id !== commentId));
       }
     } catch (err) {

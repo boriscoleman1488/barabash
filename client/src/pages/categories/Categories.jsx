@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../authContext/AuthContext';
 import Navbar from '../../components/navbar/Navbar';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { categoryAPI } from '../../api/categoryAPI';
+import { userAPI } from '../../api/userAPI';
 import './Categories.scss';
 
 const Categories = () => {
@@ -14,16 +15,6 @@ const Categories = () => {
   const [moviesLoading, setMoviesLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_BASE_URL = "http://localhost:5000/api";
-
-  // Створюємо axios instance з токеном
-  const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'token': `Bearer ${user?.accessToken}`
-    }
-  });
-
   useEffect(() => {
     if (user?.accessToken) {
       fetchCategories();
@@ -33,10 +24,10 @@ const Categories = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/categories');
+      const data = await categoryAPI.getAll();
       
-      if (response.data.success) {
-        setCategories(response.data.categories);
+      if (data.success) {
+        setCategories(data.categories);
         setError('');
       } else {
         setError('Помилка завантаження категорій');
@@ -52,10 +43,10 @@ const Categories = () => {
   const fetchCategoryMovies = async (categoryId) => {
     try {
       setMoviesLoading(true);
-      const response = await apiClient.get(`/categories/${categoryId}`);
+      const data = await categoryAPI.getById(categoryId);
       
-      if (response.data.success) {
-        setCategoryMovies(response.data.movies || []);
+      if (data.success) {
+        setCategoryMovies(data.movies || []);
         setError('');
       } else {
         setError('Помилка завантаження фільмів категорії');
@@ -75,8 +66,8 @@ const Categories = () => {
 
   const addToFavorites = async (movieId) => {
     try {
-      const response = await apiClient.post('/users/favorites', { movieId });
-      if (response.data.success) {
+      const data = await userAPI.addToFavorites(movieId);
+      if (data.success) {
         alert('Фільм додано до улюблених!');
       }
     } catch (err) {

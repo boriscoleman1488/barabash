@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../authContext/AuthContext';
 import Navbar from '../../components/navbar/Navbar';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { movieAPI } from '../../api/movieAPI';
+import { genreAPI } from '../../api/genreAPI';
+import { categoryAPI } from '../../api/categoryAPI';
+import { userAPI } from '../../api/userAPI';
 import './Home.scss';
 
 const Home = ({ type }) => {
@@ -12,20 +15,13 @@ const Home = ({ type }) => {
   const [categories, setCategories] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  const API_BASE_URL = "http://localhost:5000/api";
-
-  // Створюємо axios instance з токеном
-  const apiClient = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'token': `Bearer ${user?.accessToken}`
-    }
-  });
 
   useEffect(() => {
     if (user?.accessToken) {
@@ -35,11 +31,25 @@ const Home = ({ type }) => {
     }
   }, [user, type, selectedGenre, selectedCategory, currentPage]);
 
+  // Debounced search effect
+  useEffect(() => {
+    const delayedSearch = setTimeout(() => {
+      if (searchTerm.trim()) {
+        handleSearch();
+      } else {
+        setSearchResults([]);
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayedSearch);
+  }, [searchTerm]);
+
   const fetchGenres = async () => {
     try {
-      const response = await apiClient.get('/genres?withMovieCount=true');
-      if (response.data.success) {
-        setGenres(response.data.genres);
+      const data = await genreAPI.getAll(1, 50, true);
+      if (data.success) {
+        setGenres(data.genres);
       }
     } catch (err) {
       console.error('Error fetching genres:', err);
@@ -48,9 +58,9 @@ const Home = ({ type }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await apiClient.get('/categories');
-      if (response.data.success) {
-        setCategories(response.data.categories);
+      const data = await categoryAPI.getAll(1, 50);
+      if (data.success) {
+        setCategories(data.categories);
       }
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -60,20 +70,17 @@ const Home = ({ type }) => {
   const fetchMovies = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '12'
-      });
+      const filters = {
+        type,
+        genre: selectedGenre,
+        category: selectedCategory
+      };
 
-      if (type) params.append('type', type);
-      if (selectedGenre) params.append('genre', selectedGenre);
-      if (selectedCategory) params.append('category', selectedCategory);
-
-      const response = await apiClient.get(`/movies?${params}`);
+      const data = await movieAPI.getAll(currentPage, 12, filters);
       
-      if (response.data.success) {
-        setMovies(response.data.movies);
-        setTotalPages(response.data.pagination?.pages || 1);
+      if (data.success) {
+        setMovies(data.movies);
+        setTotalPages(data.pagination?.pages || 1);
         setError('');
       } else {
         setError('Помилка завантаження фільмів');
@@ -86,10 +93,30 @@ const Home = ({ type }) => {
     }
   };
 
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+
+    try {
+      setIsSearching(true);
+      const data = await movieAPI.search(searchTerm, 1, 20);
+      
+      if (data.success) {
+        setSearchResults(data.movies);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (err) {
+      console.error('Error searching movies:', err);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const addToFavorites = async (movieId) => {
     try {
-      const response = await apiClient.post('/users/favorites', { movieId });
-      if (response.data.success) {
+      const data = await userAPI.addToFavorites(movieId);
+      if (data.success) {
         alert('Фільм додано до улюблених!');
       }
     } catch (err) {
@@ -102,18 +129,30 @@ const Home = ({ type }) => {
     setSelectedGenre(genreId);
     setSelectedCategory('');
     setCurrentPage(1);
+    setSearchTerm('');
+    setSearchResults([]);
   };
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
     setSelectedGenre('');
     setCurrentPage(1);
+    setSearchTerm('');
+    setSearchResults([]);
   };
 
   const clearFilters = () => {
     setSelectedGenre('');
     setSelectedCategory('');
     setCurrentPage(1);
+    setSearchTerm('');
+    setSearchResults([]);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setSearchResults([]);
+    setIsSearching(false);
   };
 
   const formatDuration = (minutes) => {
@@ -126,6 +165,9 @@ const Home = ({ type }) => {
   const getTypeLabel = (movieType) => {
     return movieType === 'movie' ? 'Фільм' : 'Серіал';
   };
+
+  const displayMovies = searchTerm.trim() ? searchResults : movies;
+  const isShowingSearchResults = searchTerm.trim() && searchResults.length > 0;
 
   return (
     <div className="home-page">
@@ -157,72 +199,129 @@ const Home = ({ type }) => {
           </div>
         </div>
 
-        {/* Filters Section */}
-        <div className="filters-section">
-          <div className="filters-header">
-            <h2>Фільтри</h2>
-            {(selectedGenre || selectedCategory) && (
-              <button onClick={clearFilters} className="clear-filters-btn">
+        {/* Search Section */}
+        <div className="search-section">
+          <div className="search-container">
+            <div className="search-input-wrapper">
+              <svg className="search-icon" viewBox="0 0 24 24" fill="none">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+                <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Пошук фільмів та серіалів..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              {searchTerm && (
+                <button onClick={clearSearch} className="clear-search-btn">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </button>
+              )}
+              {isSearching && (
+                <div className="search-loading">
+                  <div className="search-spinner"></div>
+                </div>
+              )}
+            </div>
+            
+            {searchTerm && searchResults.length > 0 && (
+              <div className="search-results-info">
+                Знайдено {searchResults.length} результатів для "{searchTerm}"
+              </div>
+            )}
+            
+            {searchTerm && !isSearching && searchResults.length === 0 && (
+              <div className="no-search-results">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
-                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M21 21L16.65 16.65" stroke="currentColor" strokeWidth="2"/>
                 </svg>
-                Очистити фільтри
-              </button>
+                <p>Нічого не знайдено для "{searchTerm}"</p>
+                <span>Спробуйте інші ключові слова</span>
+              </div>
             )}
           </div>
+        </div>
 
-          <div className="filters-grid">
-            {/* Genres */}
-            <div className="filter-group">
-              <h3>Жанри</h3>
-              <div className="filter-chips">
-                {genres.map((genre) => (
-                  <button
-                    key={genre._id}
-                    className={`filter-chip ${selectedGenre === genre._id ? 'active' : ''}`}
-                    onClick={() => handleGenreChange(genre._id)}
-                  >
-                    {genre.name}
-                    <span className="chip-count">{genre.moviesCount || 0}</span>
-                  </button>
-                ))}
-              </div>
+        {/* Filters Section - Hide when searching */}
+        {!searchTerm && (
+          <div className="filters-section">
+            <div className="filters-header">
+              <h2>Фільтри</h2>
+              {(selectedGenre || selectedCategory) && (
+                <button onClick={clearFilters} className="clear-filters-btn">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                  Очистити фільтри
+                </button>
+              )}
             </div>
 
-            {/* Categories */}
-            <div className="filter-group">
-              <h3>Категорії</h3>
-              <div className="filter-chips">
-                {categories.map((category) => (
-                  <button
-                    key={category._id}
-                    className={`filter-chip ${selectedCategory === category._id ? 'active' : ''}`}
-                    onClick={() => handleCategoryChange(category._id)}
-                  >
-                    {category.name}
-                    <span className="chip-badge">{category.type}</span>
-                  </button>
-                ))}
+            <div className="filters-grid">
+              {/* Genres */}
+              <div className="filter-group">
+                <h3>Жанри</h3>
+                <div className="filter-chips">
+                  {genres.map((genre) => (
+                    <button
+                      key={genre._id}
+                      className={`filter-chip ${selectedGenre === genre._id ? 'active' : ''}`}
+                      onClick={() => handleGenreChange(genre._id)}
+                    >
+                      {genre.name}
+                      <span className="chip-count">{genre.moviesCount || 0}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Categories */}
+              <div className="filter-group">
+                <h3>Категорії</h3>
+                <div className="filter-chips">
+                  {categories.map((category) => (
+                    <button
+                      key={category._id}
+                      className={`filter-chip ${selectedCategory === category._id ? 'active' : ''}`}
+                      onClick={() => handleCategoryChange(category._id)}
+                    >
+                      {category.name}
+                      <span className="chip-badge">{category.type}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Movies Section */}
         <div className="movies-section">
           <div className="section-header">
             <h2>
-              {type ? getTypeLabel(type) : 'Всі фільми'}
-              {selectedGenre && (
-                <span className="filter-indicator">
-                  • {genres.find(g => g._id === selectedGenre)?.name}
-                </span>
-              )}
-              {selectedCategory && (
-                <span className="filter-indicator">
-                  • {categories.find(c => c._id === selectedCategory)?.name}
-                </span>
+              {isShowingSearchResults ? (
+                `Результати пошуку`
+              ) : (
+                <>
+                  {type ? getTypeLabel(type) : 'Всі фільми'}
+                  {selectedGenre && (
+                    <span className="filter-indicator">
+                      • {genres.find(g => g._id === selectedGenre)?.name}
+                    </span>
+                  )}
+                  {selectedCategory && (
+                    <span className="filter-indicator">
+                      • {categories.find(c => c._id === selectedCategory)?.name}
+                    </span>
+                  )}
+                </>
               )}
             </h2>
             <div className="view-options">
@@ -261,7 +360,7 @@ const Home = ({ type }) => {
           ) : (
             <>
               <div className="movies-grid">
-                {movies.map((movie) => (
+                {displayMovies.map((movie) => (
                   <div key={movie._id} className="movie-card">
                     <div className="movie-poster">
                       <img src={movie.posterImage} alt={movie.title} />
@@ -340,7 +439,7 @@ const Home = ({ type }) => {
                 ))}
               </div>
 
-              {movies.length === 0 && !loading && (
+              {displayMovies.length === 0 && !loading && (
                 <div className="empty-state">
                   <svg viewBox="0 0 24 24" fill="none">
                     <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" strokeWidth="2"/>
@@ -351,7 +450,7 @@ const Home = ({ type }) => {
                 </div>
               )}
 
-              {totalPages > 1 && (
+              {totalPages > 1 && !searchTerm && (
                 <div className="pagination">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
