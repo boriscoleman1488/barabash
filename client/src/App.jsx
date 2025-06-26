@@ -12,6 +12,7 @@ import Watch from "./pages/watch/Watch";
 import Login from "./pages/login/Login";
 import Profile from "./pages/profile/Profile";
 import Categories from "./pages/categories/Categories";
+import Genres from "./pages/genres/Genres";
 import MovieDetail from "./pages/movie-detail/MovieDetail";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { useContext } from "react";
@@ -50,6 +51,7 @@ const App = () => {
             <Route path="/watch" element={<Watch />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/genres" element={<Genres />} />
           </>
         )}
         {/* Catch all route */}

@@ -60,7 +60,32 @@ const Home = ({ type }) => {
     try {
       const data = await categoryAPI.getAll(1, 50);
       if (data.success) {
-        setCategories(data.categories);
+        // Додаємо підрахунок фільмів для кожної категорії
+        const categoriesWithCounts = await Promise.all(
+          data.categories.map(async (category) => {
+            try {
+              const categoryData = await categoryAPI.getById(category._id);
+              const movies = categoryData.movies || [];
+              const movieCount = movies.filter(m => m.type === 'movie').length;
+              const seriesCount = movies.filter(m => m.type === 'series').length;
+              
+              return {
+                ...category,
+                movieCount,
+                seriesCount,
+                totalCount: movies.length
+              };
+            } catch (err) {
+              return {
+                ...category,
+                movieCount: 0,
+                seriesCount: 0,
+                totalCount: 0
+              };
+            }
+          })
+        );
+        setCategories(categoriesWithCounts);
       }
     } catch (err) {
       console.error('Error fetching categories:', err);
@@ -293,7 +318,20 @@ const Home = ({ type }) => {
                       onClick={() => handleCategoryChange(category._id)}
                     >
                       {category.name}
-                      <span className="chip-badge">{category.type}</span>
+                      <div className="chip-stats">
+                        <span className="stat-item">
+                          <span className="stat-number">{category.totalCount || 0}</span>
+                          <span className="stat-label">всього</span>
+                        </span>
+                        <span className="stat-item">
+                          <span className="stat-number">{category.movieCount || 0}</span>
+                          <span className="stat-label">фільмів</span>
+                        </span>
+                        <span className="stat-item">
+                          <span className="stat-number">{category.seriesCount || 0}</span>
+                          <span className="stat-label">серіалів</span>
+                        </span>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -325,6 +363,12 @@ const Home = ({ type }) => {
               )}
             </h2>
             <div className="view-options">
+              <Link to="/genres" className="view-all-btn">
+                Переглянути жанри
+                <svg viewBox="0 0 24 24" fill="none">
+                  <polyline points="9,18 15,12 9,6" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </Link>
               <Link to="/categories" className="view-all-btn">
                 Переглянути категорії
                 <svg viewBox="0 0 24 24" fill="none">

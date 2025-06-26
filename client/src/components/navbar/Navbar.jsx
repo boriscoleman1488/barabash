@@ -1,4 +1,4 @@
-import { ArrowDropDown, Notifications, Search } from "@material-ui/icons";
+import { ArrowDropDown, Notifications } from "@material-ui/icons";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Navbar.scss";
@@ -28,6 +28,12 @@ const Navbar = () => {
           </Link>
           <Link to="/movies" className="link">
             <span className="navbarmainlinks">Фільми</span>
+          </Link>
+          <Link to="/genres" className="link">
+            <span className="navbarmainlinks">Жанри</span>
+          </Link>
+          <Link to="/categories" className="link">
+            <span className="navbarmainlinks">Категорії</span>
           </Link>
         </div>
         <div className="right">
