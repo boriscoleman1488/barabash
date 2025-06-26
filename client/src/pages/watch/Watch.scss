@@ -1,24 +1,221 @@
 .watch {
   width: 100%;
   height: 100vh;
-  background-color: var(--main-color);
-  overflow: hidden;
+  background-color: #000;
   position: relative;
+  overflow: hidden;
 
-  .back {
+  .video-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+    
+    .back {
+      display: flex;
+      align-items: center;
+      color: white;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      
+      svg {
+        margin-right: 8px;
+      }
+      
+      &:hover {
+        color: #e50914;
+      }
+    }
+    
+    .movie-title {
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .video-container {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    color: white;
-    cursor: pointer;
-    z-index: 2;
+    justify-content: center;
   }
 
   .video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+  }
+  
+  &.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    
+    .loading-spinner {
+      width: 64px;
+      height: 64px;
+      border: 6px solid rgba(229, 9, 20, 0.2);
+      border-top: 6px solid #e50914;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 18px;
+      font-weight: 500;
+    }
+  }
+  
+  &.error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .error-message {
+      text-align: center;
+      padding: 40px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 20px;
+      max-width: 600px;
+      
+      h2 {
+        color: white;
+        font-size: 24px;
+        margin: 0 0 24px 0;
+      }
+      
+      .error-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        
+        .back-btn,
+        .payment-btn {
+          padding: 12px 24px;
+          border-radius: 12px;
+          font-size: 16px;
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            transform: translateY(-2px);
+          }
+        }
+        
+        .back-btn {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+          }
+        }
+        
+        .payment-btn {
+          background: #e50914;
+          color: white;
+          
+          &:hover {
+            background: #f40612;
+          }
+        }
+        
+        @media (max-width: 576px) {
+          flex-direction: column;
+        }
+      }
+    }
+  }
+  
+  .no-video {
+    text-align: center;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 20px;
+    max-width: 600px;
+    
+    h2 {
+      color: white;
+      font-size: 24px;
+      margin: 0 0 16px 0;
+    }
+    
+    p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 16px;
+      margin: 0 0 24px 0;
+    }
+    
+    .back-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #e50914;
+      color: white;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: #f40612;
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .watch {
+    .video-header {
+      padding: 16px;
+      
+      .back {
+        font-size: 14px;
+      }
+      
+      .movie-title {
+        font-size: 16px;
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    
+    &.error .error-message,
+    .no-video {
+      padding: 30px;
+      max-width: 90%;
+      
+      h2 {
+        font-size: 20px;
+      }
+      
+      p {
+        font-size: 14px;
+      }
+    }
   }
 }

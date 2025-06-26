@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../authContext/AuthContext';
 import Navbar from '../../components/navbar/Navbar';
@@ -19,16 +19,20 @@ const MovieDetail = () => {
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showTrailer, setShowTrailer] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [hasAccess, setHasAccess] = useState(false);
   const [accessInfo, setAccessInfo] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  
+  const videoRef = useRef(null);
 
   useEffect(() => {
     if (user?.accessToken && id) {
       fetchMovieDetails();
       fetchComments();
       checkMovieAccess();
+      checkFavoriteStatus();
     }
   }, [user, id]);
 
@@ -75,6 +79,18 @@ const MovieDetail = () => {
       }
     } catch (err) {
       console.error('Error checking access:', err);
+    }
+  };
+
+  const checkFavoriteStatus = async () => {
+    try {
+      const data = await userAPI.getFavorites();
+      if (data.success && data.movies) {
+        const isFav = data.movies.some(movie => movie._id === id);
+        setIsFavorite(isFav);
+      }
+    } catch (err) {
+      console.error('Error checking favorite status:', err);
     }
   };
 
@@ -157,10 +173,23 @@ const MovieDetail = () => {
 
   const handleWatchMovie = () => {
     if (hasAccess || movie?.pricing?.isFree) {
-      navigate('/watch', { state: { movie } });
+      setShowVideo(true);
+      // Scroll to video player
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
     } else {
       // Redirect to payment page
       navigate(`/payment/${id}`);
+    }
+  };
+
+  const handleCloseVideo = () => {
+    setShowVideo(false);
+    if (videoRef.current && videoRef.current.querySelector('video')) {
+      videoRef.current.querySelector('video').pause();
     }
   };
 
@@ -318,6 +347,48 @@ const MovieDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Player Section */}
+      {showVideo && (
+        <div className="video-player-section" ref={videoRef}>
+          <div className="video-container">
+            <div className="video-header">
+              <h3>Перегляд: {movie.title}</h3>
+              <button 
+                className="close-video-btn"
+                onClick={handleCloseVideo}
+              >
+                <svg viewBox="0 0 24 24" fill="none">
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </button>
+            </div>
+            <div className="video-wrapper">
+              {movie.videoUrl ? (
+                <video 
+                  src={movie.videoUrl} 
+                  controls 
+                  autoPlay
+                  className="main-video"
+                  poster={movie.posterImage}
+                >
+                  Ваш браузер не підтримує відтворення відео.
+                </video>
+              ) : (
+                <div className="no-video-message">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" strokeWidth="2"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                  <h3>Відео недоступне</h3>
+                  <p>На жаль, відео для цього фільму тимчасово недоступне.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Movie Details */}
       <div className="movie-details-container">
