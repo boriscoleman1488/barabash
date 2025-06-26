@@ -21,7 +21,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "set PORT=3001 && react-scripts start",
     "build": "set BUILD_PATH=../api/admin && react-scripts build",
     "test": "react-scripts test --detectOpenHandles --forceExit",
     "eject": "react-scripts eject"
