@@ -206,6 +206,31 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
+
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Управління фільмами
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M23 7L16 12L23 17V7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '12px', lineHeight: '1.4' }}>
+                Додавання, редагування та видалення фільмів і серіалів
+              </p>
+              <button
+                onClick={() => window.location.href = '/movies'}
+                className="btn btn-primary"
+              >
+                Перейти до фільмів
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

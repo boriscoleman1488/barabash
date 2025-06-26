@@ -11,6 +11,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import Users from "./pages/users/Users";
 import Genres from "./pages/genres/Genres";
 import Categories from "./pages/categories/Categories";
+import Movies from "./pages/movies/Movies";
 
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext/AuthContext";
@@ -44,6 +45,10 @@ function App() {
         <Route 
           path="/categories" 
           element={user ? <Categories /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/movies" 
+          element={user ? <Movies /> : <Navigate to="/login" />} 
         />
       </Routes>
     </Router>

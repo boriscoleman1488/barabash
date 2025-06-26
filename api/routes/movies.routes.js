@@ -9,16 +9,22 @@ const {
   updateMovie,
   deleteMovie,
   getMovie,
-  getAllMovies
+  getAllMovies,
+  searchMovies,
+  getMoviesByGenre,
+  getMoviesStats
 } = require('./movie.controller');
 
 // Публічні маршрути
 router.get('/', getAllMovies);
+router.get('/search', searchMovies);
+router.get('/stats', getMoviesStats);
+router.get('/genre/:genre', getMoviesByGenre);
 router.get('/:id', getMovie);
 
 // Захищені маршрути (тільки для адміністраторів)
-router.post('/', verifyToken, adminAuth, uploadFields, createMovie);
-router.put('/:id', verifyToken, uploadFields, updateMovie);
-router.delete('/:id', verifyToken, deleteMovie);
+router.post('/', adminAuth, uploadFields, createMovie);
+router.put('/:id', adminAuth, uploadFields, updateMovie);
+router.delete('/:id', adminAuth, deleteMovie);
 
 module.exports = router;

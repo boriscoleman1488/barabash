@@ -1,4 +1,4 @@
-import apiClient from "./index";
+import apiClient from './index';
 
 export const movieAPI = {
   // Отримати всі фільми
@@ -34,6 +34,18 @@ export const movieAPI = {
   // Пошук фільмів
   search: async (searchTerm, page = 1, limit = 10) => {
     const response = await apiClient.get(`/movies/search?q=${searchTerm}&page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Отримати фільми за жанром
+  getByGenre: async (genre, page = 1, limit = 10) => {
+    const response = await apiClient.get(`/movies/genre/${genre}?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Отримати статистику фільмів
+  getStats: async () => {
+    const response = await apiClient.get("/movies/stats");
     return response.data;
   }
 };
