@@ -29,9 +29,6 @@ const Navbar = () => {
           <Link to="/" className="link">
             <span>Головна</span>
           </Link>
-          <Link to="/series" className="link">
-            <span className="navbarmainlinks">Серіали</span>
-          </Link>
           <Link to="/movies" className="link">
             <span className="navbarmainlinks">Фільми</span>
           </Link>

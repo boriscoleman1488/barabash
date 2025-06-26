@@ -85,18 +85,13 @@ const uploadFields = multer({
   limits: {
     fileSize: 1000 * 1024 * 1024, 
   },
-  fileFilter: (req, file, cb) => {
-    // Allow specific fields and dynamic episode fields
-    const allowedFields = ['posterImage', 'backdropImage', 'thumbnailImage', 'trailerUrl', 'videoUrl'];
-    const isEpisodeField = /^episode_\d+_\d+$/.test(file.fieldname);
-    
-    if (allowedFields.includes(file.fieldname) || isEpisodeField) {
-      cb(null, true);
-    } else {
-      cb(new Error(`Unexpected field: ${file.fieldname}`), false);
-    }
-  }
-}).any(); // Use .any() instead of .fields() to accept dynamic field names
+}).fields([
+  { name: 'posterImage', maxCount: 1 },
+  { name: 'backdropImage', maxCount: 1 },
+  { name: 'thumbnailImage', maxCount: 1 },
+  { name: 'trailerUrl', maxCount: 1 },
+  { name: 'videoUrl', maxCount: 1 },
+]);
 
 // Функція для видалення файлу з Cloudinary
 const deleteFromCloudinary = async (publicId) => {

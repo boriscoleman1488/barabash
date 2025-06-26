@@ -17,19 +17,7 @@ const movieSchema = new mongoose.Schema(
     
     director: { type: String },
     cast: [{ type: String }],
-    type: { type: String, enum: ['movie', 'series'], default: 'movie' },
-    
-    // Для серіалів
-    seasons: [{
-      seasonNumber: { type: Number },
-      episodes: [{
-        episodeNumber: { type: Number },
-        title: { type: String },
-        description: { type: String },
-        duration: { type: Number },
-        videoUrl: { type: String }
-      }]
-    }],
+    type: { type: String, enum: ['movie'], default: 'movie' },
     
     // Ціноутворення
     pricing: {
@@ -37,7 +25,7 @@ const movieSchema = new mongoose.Schema(
       isFree: { type: Boolean, default: true },
     },
 
-    // Категорії (вже правильно)
+    // Категорії
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
     
     // Статистика
@@ -54,7 +42,6 @@ movieSchema.index({ description: 1 });
 movieSchema.index({ genres: 1 });
 movieSchema.index({ categories: 1 });
 movieSchema.index({ releaseYear: 1 });
-movieSchema.index({ type: 1 });
 movieSchema.index({ 'pricing.isFree': 1 });
 movieSchema.index({ film_language: 1 });
 movieSchema.index({ country: 1 });
