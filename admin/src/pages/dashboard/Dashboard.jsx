@@ -231,6 +231,33 @@ export default function Dashboard() {
               </button>
             </div>
           </div>
+
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Управління оплатами
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M2 3H22L20 15H4L2 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 3L4 15L6 21H18L20 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="9" cy="19" r="1" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="20" cy="19" r="1" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </div>
+            </div>
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '12px', lineHeight: '1.4' }}>
+                Перегляд та управління оплатами користувачів
+              </p>
+              <button
+                onClick={() => window.location.href = '/payments'}
+                className="btn btn-primary"
+              >
+                Перейти до оплат
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

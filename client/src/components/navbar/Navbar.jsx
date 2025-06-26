@@ -8,12 +8,13 @@ import { logout } from "../../authContext/AuthActions";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { dispatch } = useContext(AuthContext);
+  const { user, dispatch } = useContext(AuthContext);
 
   window.onscroll = () => {
     setIsScrolled(window.pageYOffset === 0 ? false : true);
     return () => (window.onscroll = null);
   };
+
   return (
     <div className={isScrolled ? "navbar scrolled" : "navbar"}>
       <div className="container">
@@ -23,13 +24,13 @@ const Navbar = () => {
             alt=""
           />
           <Link to="/" className="link">
-            <span>Homepage</span>{" "}
+            <span>Homepage</span>
           </Link>
           <Link to="/series" className="link">
-            <span className="navbarmainlinks ">Series</span>
+            <span className="navbarmainlinks">Series</span>
           </Link>
           <Link to="/movies" className="link">
-            <span className="navbarmainlinks ">Movies</span>
+            <span className="navbarmainlinks">Movies</span>
           </Link>
           <span className="link">New and Popular</span>
           <span className="link">My List</span>
@@ -45,6 +46,9 @@ const Navbar = () => {
           <div className="profile">
             <ArrowDropDown className="icon" />
             <div className="options">
+              <Link to="/profile" className="link">
+                <span>Profile</span>
+              </Link>
               <span>Settings</span>
               <span onClick={() => dispatch(logout())}>Logout</span>
             </div>

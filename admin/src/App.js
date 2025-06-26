@@ -12,6 +12,7 @@ import Users from "./pages/users/Users";
 import Genres from "./pages/genres/Genres";
 import Categories from "./pages/categories/Categories";
 import Movies from "./pages/movies/Movies";
+import Payments from "./pages/payments/Payments";
 
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext/AuthContext";
@@ -49,6 +50,10 @@ function App() {
         <Route 
           path="/movies" 
           element={user ? <Movies /> : <Navigate to="/login" />} 
+        />
+        <Route 
+          path="/payments" 
+          element={user ? <Payments /> : <Navigate to="/login" />} 
         />
       </Routes>
     </Router>

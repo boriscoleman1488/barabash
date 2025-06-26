@@ -10,6 +10,7 @@ const movieRouter = require("./routes/movies.routes");
 const genreRouter = require("./routes/genres.routes");
 const categoriesRoutes = require('./routes/categories.routes');
 const commentsRoutes = require('./routes/comments.routes');
+const paymentsRoutes = require('./routes/payments.routes');
 
 const morgan = require("morgan");
 
@@ -66,6 +67,7 @@ app.use("/api/movies", movieRouter);
 app.use("/api/genres", genreRouter);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/comments', commentsRoutes);
+app.use('/api/payments', paymentsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
