@@ -1,23 +1,14 @@
-import axios from "axios";
-import { loginFailure, loginStart, loginSuccess } from "./AuthActions";
-
-const API_BASE_URL = "http://localhost:5000/api";
-
-const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
+import { loginStart, loginSuccess, loginFailure } from "./AuthActions";
+import apiClient from "../../api";
 
 export const login = async (user, dispatch) => {
   dispatch(loginStart());
   try {
     const res = await apiClient.post("/auth/login", user);
     
-    // Перевіряємо чи користувач є адміністратором
     if (res.data.isAdmin) {
+      // Зберігаємо користувача в localStorage
+      localStorage.setItem("admin_user", JSON.stringify(res.data));
       dispatch(loginSuccess(res.data));
       return res.data;
     } else {

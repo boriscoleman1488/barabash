@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { AuthContext } from "../../context/authContext/AuthContext";
 import { logout } from "../../context/authContext/AuthActions";
 import "./Dashboard.css";
@@ -69,10 +69,6 @@ export default function Dashboard() {
             </div>
             <div className="card-content">
               <div className="info-item">
-                <span className="label">ID користувача:</span>
-                <span className="value">{user?._id}</span>
-              </div>
-              <div className="info-item">
                 <span className="label">Ім'я користувача:</span>
                 <span className="value">{user?.username}</span>
               </div>
@@ -112,12 +108,6 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="info-item">
-                <span className="label">Статус:</span>
-                <span className={`value status-badge ${user?.isActive ? 'active' : 'inactive'}`}>
-                  {user?.isActive ? "Активний" : "Неактивний"}
-                </span>
-              </div>
-              <div className="info-item">
                 <span className="label">Дата реєстрації:</span>
                 <span className="value">{formatDate(user?.createdAt)}</span>
               </div>
@@ -130,34 +120,52 @@ export default function Dashboard() {
 
           <div className="info-card">
             <div className="card-header">
-              <h3>Токен доступу</h3>
+              <h3>Управління користувачами</h3>
               <div className="card-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="12" cy="16" r="1" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M7 11V7A5 5 0 0 1 17 7V11" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M16 21V19A4 4 0 0 0 12 15H5A4 4 0 0 0 1 19V21" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+                  <line x1="20" y1="8" x2="20" y2="14" stroke="currentColor" strokeWidth="2"/>
+                  <line x1="23" y1="11" x2="17" y2="11" stroke="currentColor" strokeWidth="2"/>
                 </svg>
               </div>
             </div>
             <div className="card-content">
-              <div className="token-container">
-                <div className="token-display">
-                  <code>{user?.accessToken}</code>
-                </div>
-                <button 
-                  className="copy-btn"
-                  onClick={() => {
-                    navigator.clipboard.writeText(user?.accessToken);
-                    alert('Токен скопійовано!');
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
-                    <path d="M5 15H4A2 2 0 0 1 2 13V4A2 2 0 0 1 4 2H13A2 2 0 0 1 15 4V5" stroke="currentColor" strokeWidth="2"/>
-                  </svg>
-                  Копіювати
-                </button>
+              <p className="card-description">
+                Переглядайте, створюйте та керуйте користувачами системи
+              </p>
+              <button 
+                onClick={() => window.location.href = '/users'}
+                className="card-action-btn"
+              >
+                Перейти до користувачів
+              </button>
+            </div>
+          </div>
+
+          <div className="info-card">
+            <div className="card-header">
+              <h3>Управління жанрами</h3>
+              <div className="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M14.5 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V7.5L14.5 2Z" stroke="currentColor" strokeWidth="2"/>
+                  <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M16 13H8" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M16 17H8" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M10 9H8" stroke="currentColor" strokeWidth="2"/>
+                </svg>
               </div>
+            </div>
+            <div className="card-content">
+              <p className="card-description">
+                Створюйте, редагуйте та керуйте жанрами фільмів
+              </p>
+              <button 
+                onClick={() => window.location.href = '/genres'}
+                className="card-action-btn"
+              >
+                Перейти до жанрів
+              </button>
             </div>
           </div>
 

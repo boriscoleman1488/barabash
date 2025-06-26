@@ -5,10 +5,14 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
-import { AuthContext } from "./context/authContext/AuthContext";
+import Users from "./pages/users/Users";
+import Genres from "./pages/genres/Genres";
+
 import { useContext } from "react";
+import { AuthContext } from "./context/authContext/AuthContext";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -18,17 +22,24 @@ function App() {
       <Routes>
         <Route 
           path="/" 
-          element={user ? <Dashboard /> : <Navigate to="/login" />} 
+          element={user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} 
         />
         <Route 
           path="/login" 
-          element={!user ? <Login /> : <Navigate to="/" />} 
+          element={!user ? <Login /> : <Navigate to="/dashboard" />} 
         />
         <Route 
           path="/dashboard" 
           element={user ? <Dashboard /> : <Navigate to="/login" />} 
         />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route 
+          path="/users" 
+          element={user ? <Users /> : <Navigate to="/login" />} 
+        />
+        <Route
+          path="/genres"
+          element={user ? <Genres /> : <Navigate to="/login" />}
+        />
       </Routes>
     </Router>
   );
