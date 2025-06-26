@@ -1,5 +1,5 @@
-const Category = require('../models/Category');
 const Movie = require('../models/Movie');
+const Category = require('../models/Category');
 
 exports.createCategory = async (req, res) => {
   try {

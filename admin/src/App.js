@@ -10,6 +10,7 @@ import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
 import Users from "./pages/users/Users";
 import Genres from "./pages/genres/Genres";
+import Categories from "./pages/categories/Categories";
 
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext/AuthContext";
@@ -40,6 +41,8 @@ function App() {
           path="/genres"
           element={user ? <Genres /> : <Navigate to="/login" />}
         />
+        // Додати маршрут:
+        <Route path="/categories" element={user ? <Categories /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );
