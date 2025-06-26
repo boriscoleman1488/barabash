@@ -46,7 +46,9 @@ const movieSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-movieSchema.index({ title: 'text', description: 'text' }, { default_language: 'english' });
+// Видаляємо проблемний текстовий індекс і створюємо простіші індекси
+movieSchema.index({ title: 1 });
+movieSchema.index({ description: 1 });
 movieSchema.index({ genres: 1 });
 movieSchema.index({ releaseYear: 1 });
 movieSchema.index({ type: 1 });
