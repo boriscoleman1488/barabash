@@ -7,13 +7,33 @@ export const movieAPI = {
     return response.data;
   },
 
-  // Створити фільм
+  // Створити фільм з файлами
+  createWithFiles: async (formData) => {
+    const response = await apiClient.post("/movies", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Створити фільм (звичайний)
   create: async (movieData) => {
     const response = await apiClient.post("/movies", movieData);
     return response.data;
   },
 
-  // Оновити фільм
+  // Оновити фільм з файлами
+  updateWithFiles: async (movieId, formData) => {
+    const response = await apiClient.put(`/movies/${movieId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  // Оновити фільм (звичайний)
   update: async (movieId, movieData) => {
     const response = await apiClient.put(`/movies/${movieId}`, movieData);
     return response.data;

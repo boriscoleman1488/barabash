@@ -6,13 +6,12 @@ const movieSchema = new mongoose.Schema(
     description: { type: String, required: true },
     posterImage: { type: String, required: true },
     trailerUrl: { type: String },
-    movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
     videoUrl: { type: String },
     duration: { type: Number },
     releaseYear: { type: Number, required: true },
     country: { type: String },
     language: { type: String },
-    ageRating: { type: String, enum: ['G', 'PG', 'PG-13', 'R', 'NC-17'] },
+    ageRating: { type: String, enum: ['G', 'PG', 'PG-13', 'R', 'NC-17'], default: 'PG' },
     genres: [{ type: String }],
     director: { type: String },
     cast: [{ type: String }],
@@ -33,8 +32,16 @@ const movieSchema = new mongoose.Schema(
     // Ціноутворення
     pricing: {
       buyPrice: { type: Number, default: 0 },
-      isFree: { type: Boolean, default: false },
-    }
+      isFree: { type: Boolean, default: true },
+    },
+
+    // Категорії
+    categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
+    
+    // Статистика
+    views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    rating: { type: Number, default: 0, min: 0, max: 10 }
   },
   { timestamps: true }
 );
@@ -42,5 +49,7 @@ const movieSchema = new mongoose.Schema(
 movieSchema.index({ title: 'text', description: 'text' });
 movieSchema.index({ genres: 1 });
 movieSchema.index({ releaseYear: 1 });
+movieSchema.index({ type: 1 });
+movieSchema.index({ 'pricing.isFree': 1 });
 
 module.exports = mongoose.model("Movie", movieSchema);
