@@ -46,7 +46,7 @@ const movieSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Видаляємо проблемний текстовий індекс і створюємо простіші індекси
+// Створюємо прості індекси без текстового пошуку
 movieSchema.index({ title: 1 });
 movieSchema.index({ description: 1 });
 movieSchema.index({ genres: 1 });
