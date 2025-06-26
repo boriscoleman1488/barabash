@@ -6,6 +6,7 @@ const movieSchema = new mongoose.Schema(
     description: { type: String, required: true },
     posterImage: { type: String, required: true },
     trailerUrl: { type: String },
+    movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
     videoUrl: { type: String },
     duration: { type: Number },
     releaseYear: { type: Number, required: true },

@@ -1,9 +1,9 @@
 const Genre = require('../models/Genre');
 
 const createGenre = async (req, res) => {
-  const { name, description, icon, color } = req.body;
-  
   try {
+    const { name, description, content } = req.body;
+    
     const existingGenre = await Genre.findOne({ name });
     
     if (existingGenre) {
@@ -16,14 +16,62 @@ const createGenre = async (req, res) => {
     const genre = await Genre.create({
       name,
       description,
-      icon,
-      color,
-      content: []
+      content: content || []
     });
     
     res.status(201).json({
       success: true,
       message: "Жанр успішно створений",
+      genre
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Помилка сервера",
+      errorMessage: error.message
+    });
+  }
+};
+
+const updateGenre = async (req, res) => {
+  try {
+    const { name, description, content } = req.body;
+    
+    if (name) {
+      const existingGenre = await Genre.findOne({ 
+        name, 
+        _id: { $ne: req.params.id } 
+      });
+      
+      if (existingGenre) {
+        return res.status(400).json({
+          success: false,
+          message: "Жанр з такою назвою вже існує"
+        });
+      }
+    }
+    
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (content !== undefined) updateData.content = content;
+    
+    const genre = await Genre.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-__v');
+    
+    if (!genre) {
+      return res.status(404).json({
+        success: false,
+        message: "Жанр не знайдено"
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: "Жанр успішно оновлено",
       genre
     });
   } catch (error) {
@@ -86,51 +134,6 @@ const getGenreById = async (req, res) => {
     
     res.status(200).json({
       success: true,
-      genre
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Помилка сервера",
-      errorMessage: error.message
-    });
-  }
-};
-
-const updateGenre = async (req, res) => {
-  try {
-    const { name, description, icon, color } = req.body;
-    
-    if (name) {
-      const existingGenre = await Genre.findOne({ 
-        name, 
-        _id: { $ne: req.params.id } 
-      });
-      
-      if (existingGenre) {
-        return res.status(400).json({
-          success: false,
-          message: "Жанр з такою назвою вже існує"
-        });
-      }
-    }
-    
-    const genre = await Genre.findByIdAndUpdate(
-      req.params.id,
-      { name, description, icon, color },
-      { new: true, runValidators: true }
-    ).select('-__v');
-    
-    if (!genre) {
-      return res.status(404).json({
-        success: false,
-        message: "Жанр не знайдено"
-      });
-    }
-    
-    res.status(200).json({
-      success: true,
-      message: "Жанр успішно оновлено",
       genre
     });
   } catch (error) {

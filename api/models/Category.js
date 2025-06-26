@@ -5,7 +5,6 @@ const categorySchema = new mongoose.Schema(
     name: { type: String, required: true, unique: true },
     description: { type: String },
     type: { type: String, required: true, },
-    movies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
     isActive: { type: Boolean, default: true }
   },
   { timestamps: true }

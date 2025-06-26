@@ -6,8 +6,6 @@ const genreSchema = new mongoose.Schema(
     description: { type: String },
     content: { type: Array },
     isActive: { type: Boolean, default: true },
-    icon: { type: String },
-    color: { type: String },
   },
   { timestamps: true }
 );

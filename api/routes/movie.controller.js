@@ -4,7 +4,7 @@ const { deleteFromCloudinary, getPublicIdFromUrl } = require('../config/cloudina
 
 const createMovie = async (req, res) => {
   if (!isAdmin(req.user)) {
-    return res.status(403).json({ message: 'Доступ заборонено. Тільки адміністратори можуть довати фільми.' });
+    return res.status(403).json({ message: 'Доступ заборонено. Тільки адміністратори можуть додавати фільми.' });
   }
 
   try {
@@ -15,7 +15,6 @@ const createMovie = async (req, res) => {
       if (req.files.posterImage) {
         movieData.posterImage = req.files.posterImage[0].path;
       }
-  
       if (req.files.trailerUrl) {
         movieData.trailerUrl = req.files.trailerUrl[0].path;
       }
@@ -24,21 +23,42 @@ const createMovie = async (req, res) => {
       }
     }
 
+    // Валідація обов'язкових полів відповідно до моделі
+    if (!movieData.title || !movieData.description || !movieData.posterImage || !movieData.releaseYear) {
+      return res.status(400).json({
+        success: false,
+        message: 'Обов\'язкові поля: title, description, posterImage, releaseYear'
+      });
+    }
+
+    // Обробка жанрів як масиву рядків
+    if (movieData.genres && typeof movieData.genres === 'string') {
+      movieData.genres = movieData.genres.split(',').map(g => g.trim());
+    }
+
+    // Обробка акторів як масиву рядків
+    if (movieData.cast && typeof movieData.cast === 'string') {
+      movieData.cast = movieData.cast.split(',').map(c => c.trim());
+    }
+
     const newMovie = new Movie(movieData);
     const savedMovie = await newMovie.save();
 
     res.status(201).json({
+      success: true,
       message: 'Фільм успішно створено',
       movie: savedMovie
     });
   } catch (error) {
     console.error('Помилка створення фільму:', error);
     res.status(500).json({ 
+      success: false,
       message: 'Помилка сервера при створенні фільму',
       error: error.message 
     });
   }
 };
+
 
 const updateMovie = async (req, res) => {
   if (!isAdmin(req.user)) {

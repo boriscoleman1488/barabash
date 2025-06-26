@@ -35,5 +35,11 @@ export const genreAPI = {
   search: async (searchTerm, page = 1, limit = 10) => {
     const response = await apiClient.get(`/genres/search?q=${searchTerm}&page=${page}&limit=${limit}`);
     return response.data;
+  },
+
+  // Змінити статус жанру (активний/неактивний)
+  toggleStatus: async (genreId) => {
+    const response = await apiClient.patch(`/genres/${genreId}/toggle-status`);
+    return response.data;
   }
 };

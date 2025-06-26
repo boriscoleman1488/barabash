@@ -16,7 +16,7 @@ exports.createCategory = async (req, res) => {
     const category = new Category({
       name,
       description,
-      type: type || 'movie',
+      type: type || 'movie'
     });
 
     await category.save();
@@ -51,14 +51,14 @@ exports.getAllCategories = async (req, res) => {
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
+        { description: { $regex: search, $options: 'i' } },
+        { type: { $regex: search, $options: 'i' } }
       ];
     }
 
     const skip = (page - 1) * limit;
     
     const categories = await Category.find(filter)
-      .populate('movies', 'title posterImage duration releaseYear')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));

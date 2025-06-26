@@ -119,6 +119,22 @@ export default function Genres() {
     fetchGenres();
   }, []);
 
+  // Зміна статусу жанру
+  const toggleGenreStatus = async (genreId) => {
+    try {
+      const data = await genreAPI.toggleStatus(genreId);
+      
+      if (data.success) {
+        fetchGenres(currentPage);
+        alert(data.message || "Статус жанру успішно змінений!");
+      } else {
+        alert(data.message || "Помилка зміни статусу жанру");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Помилка з'єднання з сервером");
+    }
+  };
+
   return (
     <div className="genres-page">
       <div className="genres-header">
@@ -177,6 +193,7 @@ export default function Genres() {
                   <tr>
                     <th>Назва</th>
                     <th>Опис</th>
+                    <th>Статус</th>
                     <th>Дата створення</th>
                     <th>Дії</th>
                   </tr>
@@ -192,9 +209,22 @@ export default function Genres() {
                           {genre.description || "Опис відсутній"}
                         </div>
                       </td>
+                      <td>
+                        <span className={`status-badge ${genre.isActive ? 'active' : 'inactive'}`}>
+                          {genre.isActive ? 'Активний' : 'Неактивний'}
+                        </span>
+                      </td>
                       <td>{formatDate(genre.createdAt)}</td>
                       <td>
                         <div className="action-buttons">
+                          <button
+                            onClick={() => toggleGenreStatus(genre._id)}
+                            className={`action-btn toggle ${genre.isActive ? 'deactivate' : 'activate'}`}
+                            title={genre.isActive ? 'Деактивувати жанр' : 'Активувати жанр'}
+                          >
+                            {genre.isActive ? '🔴' : '🟢'}
+                          </button>
+                          
                           <button
                             onClick={() => openEditModal(genre)}
                             className="action-btn edit"
