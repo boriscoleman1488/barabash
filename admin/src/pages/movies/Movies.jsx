@@ -46,7 +46,6 @@ export default function Movies() {
     videoUrl: null
   });
 
-  // Список мов з українськими назвами та правильними кодами для БД
   const languages = [
     { code: "uk", name: "Українська" },
     { code: "en", name: "Англійська" },

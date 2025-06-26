@@ -373,11 +373,6 @@ const Home = ({ type }) => {
                               <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="2"/>
                             </svg>
                           </Link>
-                          <Link to="/watch" state={{ movie }} className="play-btn">
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <polygon points="5,3 19,12 5,21" fill="currentColor"/>
-                            </svg>
-                          </Link>
                           <button 
                             className="favorite-btn"
                             onClick={() => addToFavorites(movie._id)}
@@ -388,12 +383,6 @@ const Home = ({ type }) => {
                           </button>
                         </div>
                         <div className="movie-quick-info">
-                          <div className="movie-rating">
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <polygon points="12,2 15.09,8.26 22,9 17,14 18.18,21 12,17.77 5.82,21 7,14 2,9 8.91,8.26" fill="currentColor"/>
-                            </svg>
-                            <span>{movie.rating || 'N/A'}</span>
-                          </div>
                           <div className="movie-duration">
                             {formatDuration(movie.duration)}
                           </div>
