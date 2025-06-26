@@ -46,12 +46,14 @@ const movieSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Створюємо прості індекси без текстового пошуку
+// Створюємо прості індекси без текстового пошуку та мовних налаштувань
 movieSchema.index({ title: 1 });
 movieSchema.index({ description: 1 });
 movieSchema.index({ genres: 1 });
 movieSchema.index({ releaseYear: 1 });
 movieSchema.index({ type: 1 });
 movieSchema.index({ 'pricing.isFree': 1 });
+movieSchema.index({ language: 1 });
+movieSchema.index({ country: 1 });
 
 module.exports = mongoose.model("Movie", movieSchema);

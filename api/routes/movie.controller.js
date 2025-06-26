@@ -64,6 +64,15 @@ const createMovie = async (req, res) => {
       movieData.cast = movieData.cast.split(',').map(c => c.trim());
     }
 
+    // Обробка сезонів для серіалів
+    if (movieData.seasons && typeof movieData.seasons === 'string') {
+      try {
+        movieData.seasons = JSON.parse(movieData.seasons);
+      } catch {
+        movieData.seasons = [];
+      }
+    }
+
     // Обробка pricing
     if (movieData['pricing.buyPrice'] !== undefined) {
       movieData.pricing = {
@@ -138,10 +147,33 @@ const updateMovie = async (req, res) => {
 
     // Обробка жанрів та акторів
     if (updateData.genres && typeof updateData.genres === 'string') {
-      updateData.genres = updateData.genres.split(',').map(g => g.trim());
+      try {
+        updateData.genres = JSON.parse(updateData.genres);
+      } catch {
+        updateData.genres = updateData.genres.split(',').map(g => g.trim());
+      }
     }
+    
     if (updateData.cast && typeof updateData.cast === 'string') {
       updateData.cast = updateData.cast.split(',').map(c => c.trim());
+    }
+
+    // Обробка сезонів
+    if (updateData.seasons && typeof updateData.seasons === 'string') {
+      try {
+        updateData.seasons = JSON.parse(updateData.seasons);
+      } catch {
+        updateData.seasons = [];
+      }
+    }
+
+    // Обробка pricing
+    if (updateData.pricing && typeof updateData.pricing === 'string') {
+      try {
+        updateData.pricing = JSON.parse(updateData.pricing);
+      } catch {
+        updateData.pricing = { buyPrice: 0, isFree: true };
+      }
     }
 
     const updatedMovie = await Movie.findByIdAndUpdate(id, updateData, { new: true });
@@ -266,11 +298,14 @@ const getAllMovies = async (req, res) => {
     }
     
     if (search) {
+      // Використовуємо регулярні вирази замість текстового пошуку
+      const searchRegex = new RegExp(search, 'i');
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { director: { $regex: search, $options: 'i' } },
-        { cast: { $in: [new RegExp(search, 'i')] } }
+        { title: searchRegex },
+        { description: searchRegex },
+        { director: searchRegex },
+        { cast: { $in: [searchRegex] } },
+        { genres: { $in: [searchRegex] } }
       ];
     }
 
@@ -314,13 +349,15 @@ const searchMovies = async (req, res) => {
       });
     }
 
+    // Використовуємо регулярні вирази замість текстового пошуку
+    const searchRegex = new RegExp(q, 'i');
     const query = {
       $or: [
-        { title: { $regex: q, $options: 'i' } },
-        { description: { $regex: q, $options: 'i' } },
-        { director: { $regex: q, $options: 'i' } },
-        { cast: { $in: [new RegExp(q, 'i')] } },
-        { genres: { $in: [new RegExp(q, 'i')] } }
+        { title: searchRegex },
+        { description: searchRegex },
+        { director: searchRegex },
+        { cast: { $in: [searchRegex] } },
+        { genres: { $in: [searchRegex] } }
       ]
     };
 
