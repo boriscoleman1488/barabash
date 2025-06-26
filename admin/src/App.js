@@ -41,8 +41,10 @@ function App() {
           path="/genres"
           element={user ? <Genres /> : <Navigate to="/login" />}
         />
-        // Додати маршрут:
-        <Route path="/categories" element={user ? <Categories /> : <Navigate to="/login" />} />
+        <Route 
+          path="/categories" 
+          element={user ? <Categories /> : <Navigate to="/login" />} 
+        />
       </Routes>
     </Router>
   );

@@ -1,5 +1,5 @@
-const Movie = require('../models/Movie');
 const Category = require('../models/Category');
+const Movie = require('../models/Movie');
 
 exports.createCategory = async (req, res) => {
   try {
@@ -7,19 +7,30 @@ exports.createCategory = async (req, res) => {
 
     const existingCategory = await Category.findOne({ name });
     if (existingCategory) {
-      return res.status(400).json({ message: 'Категорія з такою назвою вже існує' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Категорія з такою назвою вже існує' 
+      });
     }
 
     const category = new Category({
       name,
       description,
-      type,
+      type: type || 'movie',
     });
 
     await category.save();
-    res.status(201).json(category);
+    res.status(201).json({
+      success: true,
+      message: 'Категорія успішно створена',
+      category
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка створення категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка створення категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -38,20 +49,24 @@ exports.getAllCategories = async (req, res) => {
     if (type) filter.type = type;
 
     if (search) {
-      filter.$text = { $search: search };
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
 
     const skip = (page - 1) * limit;
     
     const categories = await Category.find(filter)
-      .populate('movies', 'title poster duration rating')
-      .sort(sort)
+      .populate('movies', 'title posterImage duration releaseYear')
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 
     const total = await Category.countDocuments(filter);
 
     res.json({
+      success: true,
       categories,
       pagination: {
         current: parseInt(page),
@@ -60,22 +75,36 @@ exports.getAllCategories = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка отримання категорій', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка отримання категорій', 
+      error: error.message 
+    });
   }
 };
 
 exports.getCategoryById = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id)
-      .populate('movies', 'title poster duration rating genres');
+      .populate('movies', 'title posterImage duration releaseYear genres');
     
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
-    res.json(category);
+    res.json({
+      success: true,
+      category
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка отримання категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка отримання категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -89,7 +118,10 @@ exports.updateCategory = async (req, res) => {
         _id: { $ne: req.params.id } 
       });
       if (existingCategory) {
-        return res.status(400).json({ message: 'Категорія з такою назвою вже існує' });
+        return res.status(400).json({ 
+          success: false,
+          message: 'Категорія з такою назвою вже існує' 
+        });
       }
     }
 
@@ -104,15 +136,26 @@ exports.updateCategory = async (req, res) => {
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    ).populate('movies', 'title poster');
+    ).populate('movies', 'title posterImage');
 
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
-    res.json(category);
+    res.json({
+      success: true,
+      message: 'Категорія успішно оновлена',
+      category
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка оновлення категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка оновлення категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -121,12 +164,22 @@ exports.deleteCategory = async (req, res) => {
     const category = await Category.findByIdAndDelete(req.params.id);
     
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
-    res.json({ message: 'Категорію успішно видалено' });
+    res.json({ 
+      success: true,
+      message: 'Категорію успішно видалено' 
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка видалення категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка видалення категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -135,19 +188,26 @@ exports.toggleCategoryStatus = async (req, res) => {
     const category = await Category.findById(req.params.id);
     
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
     category.isActive = !category.isActive;
-    category.metadata.lastUpdated = new Date();
     await category.save();
 
     res.json({ 
+      success: true,
       message: `Категорію ${category.isActive ? 'активовано' : 'деактивовано'}`,
       category 
     });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка зміни статусу категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка зміни статусу категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -157,26 +217,42 @@ exports.addMovieToCategory = async (req, res) => {
     
     const movie = await Movie.findById(movieId);
     if (!movie) {
-      return res.status(404).json({ message: 'Фільм не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Фільм не знайдено' 
+      });
     }
 
     const category = await Category.findById(req.params.id);
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
     if (category.movies.includes(movieId)) {
-      return res.status(400).json({ message: 'Фільм вже додано до цієї категорії' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Фільм вже додано до цієї категорії' 
+      });
     }
 
     category.movies.push(movieId);
-    category.metadata.lastUpdated = new Date();
     await category.save();
 
-    await category.populate('movies', 'title poster');
-    res.json({ message: 'Фільм додано до категорії', category });
+    await category.populate('movies', 'title posterImage');
+    res.json({ 
+      success: true,
+      message: 'Фільм додано до категорії', 
+      category 
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка додавання фільму до категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка додавання фільму до категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -186,19 +262,29 @@ exports.removeMovieFromCategory = async (req, res) => {
     
     const category = await Category.findById(req.params.id);
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
     category.movies = category.movies.filter(id => id.toString() !== movieId);
     await category.save();
 
-    await category.populate('movies', 'title poster');
-    res.json({ message: 'Фільм видалено з категорії', category });
+    await category.populate('movies', 'title posterImage');
+    res.json({ 
+      success: true,
+      message: 'Фільм видалено з категорії', 
+      category 
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка видалення фільму з категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка видалення фільму з категорії', 
+      error: error.message 
+    });
   }
 };
-
 
 exports.getCategoryMovies = async (req, res) => {
   try {
@@ -208,7 +294,7 @@ exports.getCategoryMovies = async (req, res) => {
     const category = await Category.findById(req.params.id)
       .populate({
         path: 'movies',
-        select: 'title description poster duration rating genres releaseYear',
+        select: 'title description posterImage duration releaseYear genres',
         options: {
           skip: skip,
           limit: parseInt(limit)
@@ -216,13 +302,17 @@ exports.getCategoryMovies = async (req, res) => {
       });
 
     if (!category) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Категорію не знайдено' 
+      });
     }
 
     const totalMovies = await Category.findById(req.params.id).select('movies');
     const total = totalMovies.movies.length;
 
     res.json({
+      success: true,
       category: {
         _id: category._id,
         name: category.name,
@@ -237,7 +327,11 @@ exports.getCategoryMovies = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка отримання фільмів категорії', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка отримання фільмів категорії', 
+      error: error.message 
+    });
   }
 };
 
@@ -246,23 +340,36 @@ exports.searchCategories = async (req, res) => {
     const { q, type, isActive = true } = req.query;
     
     if (!q) {
-      return res.status(400).json({ message: 'Параметр пошуку обов\'язковий' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Параметр пошуку обов\'язковий' 
+      });
     }
 
     const filter = {
-      $text: { $search: q },
+      $or: [
+        { name: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } }
+      ],
       isActive: isActive === 'true'
     };
 
     if (type) filter.type = type;
 
-    const categories = await Category.find(filter, { score: { $meta: 'textScore' } })
-      .sort({ score: { $meta: 'textScore' } })
-      .populate('movies', 'title poster')
+    const categories = await Category.find(filter)
+      .populate('movies', 'title posterImage')
+      .sort({ createdAt: -1 })
       .limit(20);
 
-    res.json(categories);
+    res.json({
+      success: true,
+      categories
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Помилка пошуку категорій', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Помилка пошуку категорій', 
+      error: error.message 
+    });
   }
 };

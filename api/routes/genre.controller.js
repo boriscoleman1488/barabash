@@ -37,20 +37,32 @@ const createGenre = async (req, res) => {
 
 const getAllGenres = async (req, res) => {
   try {
-    const { active } = req.query;
+    const { active, page = 1, limit = 10 } = req.query;
     
     let filter = {};
     if (active !== undefined) {
       filter.isActive = active === 'true';
     }
     
+    const skip = (page - 1) * limit;
+    
     const genres = await Genre.find(filter)
-      .select('-__v');
+      .select('-__v')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await Genre.countDocuments(filter);
     
     res.status(200).json({
       success: true,
       count: genres.length,
-      genres
+      genres,
+      pagination: {
+        current: parseInt(page),
+        pages: Math.ceil(total / limit),
+        total
+      }
     });
   } catch (error) {
     res.status(500).json({

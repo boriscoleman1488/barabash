@@ -38,7 +38,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-
 const deleteUser = async (req, res) => {
   const { id } = req.params;
   
@@ -65,7 +64,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Get user by ID
 const getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -90,7 +88,6 @@ const getUser = async (req, res) => {
   }
 };
 
-//Операції Адміністратора
 const getAllUsers = async (req, res) => {
   const query = req.query.new;
   const page = parseInt(req.query.page) || 1;
@@ -100,7 +97,7 @@ const getAllUsers = async (req, res) => {
   try {
     const users = query
       ? await User.find().select('-password').sort({ _id: -1 }).limit(5)
-      : await User.find().select('-password').skip(skip).limit(limit);
+      : await User.find().select('-password').sort({ createdAt: -1 }).skip(skip).limit(limit);
       
     const total = await User.countDocuments();
     
@@ -108,10 +105,9 @@ const getAllUsers = async (req, res) => {
       success: true,
       users,
       pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
+        current: page,
+        pages: Math.ceil(total / limit),
+        total
       }
     });
   } catch (error) {
@@ -160,7 +156,6 @@ const getUserStats = async (req, res) => {
   }
 };
 
-
 const createUser = async (req, res) => {
   const { username, email, password, firstName, lastName, isAdmin } = req.body;
   
@@ -186,7 +181,7 @@ const createUser = async (req, res) => {
       firstName,
       lastName,
       isAdmin: isAdmin || false,
-      isEmailVerified: true
+      isActive: true
     });
     
     const { password: userPassword, ...userInfo } = user._doc;
@@ -204,7 +199,6 @@ const createUser = async (req, res) => {
     });
   }
 };
-
 
 const toggleUserStatus = async (req, res) => {
   const { id } = req.params;

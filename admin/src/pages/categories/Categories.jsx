@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { categoryAPI } from "../../api/categoryAPI";
 import "./Categories.css";
 
@@ -14,7 +14,8 @@ export default function Categories() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [newCategory, setNewCategory] = useState({
     name: "",
-    description: ""
+    description: "",
+    type: "movie"
   });
 
   // Отримання списку категорій
@@ -24,13 +25,15 @@ export default function Categories() {
       const data = await categoryAPI.getAll(page, 10);
       
       if (data.success) {
-        setCategories(data.categories);
-        setTotalPages(data.pagination.pages);
+        setCategories(data.categories || []);
+        setTotalPages(data.pagination?.pages || 1);
         setCurrentPage(page);
+        setError("");
       } else {
         setError(data.message || "Помилка завантаження категорій");
       }
     } catch (err) {
+      console.error('Fetch categories error:', err);
       setError(err.response?.data?.message || "Помилка з'єднання з сервером");
     } finally {
       setLoading(false);
@@ -47,13 +50,17 @@ export default function Categories() {
         setShowCreateModal(false);
         setNewCategory({
           name: "",
-          description: ""
+          description: "",
+          type: "movie"
         });
         fetchCategories(currentPage);
+        setError("");
+        alert("Категорія успішно створена!");
       } else {
         setError(data.message || "Помилка створення категорії");
       }
     } catch (err) {
+      console.error('Create category error:', err);
       setError(err.response?.data?.message || "Помилка створення категорії");
     }
   };
@@ -68,10 +75,13 @@ export default function Categories() {
         setShowEditModal(false);
         setEditingCategory(null);
         fetchCategories(currentPage);
+        setError("");
+        alert("Категорія успішно оновлена!");
       } else {
         setError(data.message || "Помилка оновлення категорії");
       }
     } catch (err) {
+      console.error('Update category error:', err);
       setError(err.response?.data?.message || "Помилка оновлення категорії");
     }
   };
@@ -84,10 +94,13 @@ export default function Categories() {
         
         if (data.success) {
           fetchCategories(currentPage);
+          setError("");
+          alert("Категорія успішно видалена!");
         } else {
           setError(data.message || "Помилка видалення категорії");
         }
       } catch (err) {
+        console.error('Delete category error:', err);
         setError(err.response?.data?.message || "Помилка видалення категорії");
       }
     }
@@ -101,13 +114,15 @@ export default function Categories() {
         const data = await categoryAPI.search(searchTerm);
         
         if (data.success) {
-          setCategories(data.categories);
+          setCategories(data.categories || []);
           setTotalPages(1);
           setCurrentPage(1);
+          setError("");
         } else {
           setError(data.message || "Помилка пошуку");
         }
       } catch (err) {
+        console.error('Search categories error:', err);
         setError(err.response?.data?.message || "Помилка пошуку");
       } finally {
         setLoading(false);
@@ -116,6 +131,12 @@ export default function Categories() {
       fetchCategories(1);
     }
   };
+
+  // Фільтрація категорій за пошуковим терміном (локальний пошук)
+  const filteredCategories = categories.filter(category => 
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   useEffect(() => {
     fetchCategories();
@@ -133,12 +154,21 @@ export default function Categories() {
     <div className="categories-container">
       <div className="categories-header">
         <h1>Управління категоріями</h1>
-        <button 
-          className="btn btn-primary"
-          onClick={() => setShowCreateModal(true)}
-        >
-          Додати категорію
-        </button>
+        <div>
+          <button 
+            className="btn btn-secondary"
+            onClick={() => window.location.href = '/dashboard'}
+            style={{ marginRight: '10px' }}
+          >
+            ← Назад
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowCreateModal(true)}
+          >
+            Додати категорію
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -180,20 +210,22 @@ export default function Categories() {
             <tr>
               <th>Назва</th>
               <th>Опис</th>
+              <th>Тип</th>
               <th>Дата створення</th>
               <th>Дії</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((category) => (
+            {filteredCategories.map((category) => (
               <tr key={category._id}>
                 <td>{category.name}</td>
                 <td>{category.description || "Без опису"}</td>
+                <td>{category.type || "movie"}</td>
                 <td>{new Date(category.createdAt).toLocaleDateString()}</td>
                 <td>
                   <button
                     onClick={() => {
-                      setEditingCategory(category);
+                      setEditingCategory({ ...category });
                       setShowEditModal(true);
                     }}
                     className="btn btn-sm btn-outline"
@@ -212,7 +244,7 @@ export default function Categories() {
           </tbody>
         </table>
 
-        {categories.length === 0 && (
+        {filteredCategories.length === 0 && (
           <div className="no-data">
             {searchTerm ? "Категорії не знайдені" : "Немає категорій"}
           </div>
@@ -220,7 +252,7 @@ export default function Categories() {
       </div>
 
       {/* Пагінація */}
-      {totalPages > 1 && (
+      {totalPages > 1 && !searchTerm && (
         <div className="pagination">
           <button
             onClick={() => fetchCategories(currentPage - 1)}
@@ -273,6 +305,17 @@ export default function Categories() {
                   rows="3"
                 />
               </div>
+              <div className="form-group">
+                <label>Тип:</label>
+                <select
+                  value={newCategory.type}
+                  onChange={(e) => setNewCategory({...newCategory, type: e.target.value})}
+                >
+                  <option value="movie">Фільми</option>
+                  <option value="series">Серіали</option>
+                  <option value="both">Обидва</option>
+                </select>
+              </div>
               <div className="modal-actions">
                 <button type="submit" className="btn btn-primary">
                   Створити
@@ -320,6 +363,17 @@ export default function Categories() {
                   onChange={(e) => setEditingCategory({...editingCategory, description: e.target.value})}
                   rows="3"
                 />
+              </div>
+              <div className="form-group">
+                <label>Тип:</label>
+                <select
+                  value={editingCategory.type || "movie"}
+                  onChange={(e) => setEditingCategory({...editingCategory, type: e.target.value})}
+                >
+                  <option value="movie">Фільми</option>
+                  <option value="series">Серіали</option>
+                  <option value="both">Обидва</option>
+                </select>
               </div>
               <div className="modal-actions">
                 <button type="submit" className="btn btn-primary">
