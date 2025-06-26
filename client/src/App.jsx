@@ -11,6 +11,7 @@ import Register from "./pages/register/Register";
 import Watch from "./pages/watch/Watch";
 import Login from "./pages/login/Login";
 import Profile from "./pages/profile/Profile";
+import Categories from "./pages/categories/Categories";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { useContext } from "react";
 import { AuthContext } from "./authContext/AuthContext";
@@ -46,6 +47,7 @@ const App = () => {
             <Route path="/series" element={<Home type="series" />} />
             <Route path="/watch" element={<Watch />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/categories" element={<Categories />} />
           </>
         )}
         {/* Catch all route */}
