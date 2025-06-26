@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { genreAPI } from "../../api/genreAPI";
-import "./Genres.css";
+import "../../styles/admin-common.css";
 
 export default function Genres() {
   const [genres, setGenres] = useState([]);
@@ -17,7 +17,6 @@ export default function Genres() {
     description: ""
   });
 
-  // Отримання списку жанрів
   const fetchGenres = async (page = 1) => {
     try {
       setLoading(true);
@@ -37,7 +36,6 @@ export default function Genres() {
     }
   };
 
-  // Створення нового жанру
   const handleCreateGenre = async (e) => {
     e.preventDefault();
     try {
@@ -59,7 +57,6 @@ export default function Genres() {
     }
   };
 
-  // Редагування жанру
   const handleEditGenre = async (e) => {
     e.preventDefault();
     try {
@@ -78,7 +75,6 @@ export default function Genres() {
     }
   };
 
-  // Видалення жанру
   const deleteGenre = async (genreId) => {
     if (!window.confirm("Ви впевнені, що хочете видалити цей жанр?")) {
       return;
@@ -98,13 +94,11 @@ export default function Genres() {
     }
   };
 
-  // Відкриття модального вікна редагування
   const openEditModal = (genre) => {
     setEditingGenre({ ...genre });
     setShowEditModal(true);
   };
 
-  // Фільтрація жанрів за пошуковим терміном
   const filteredGenres = genres.filter(genre => 
     genre.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (genre.description && genre.description.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -119,7 +113,6 @@ export default function Genres() {
     fetchGenres();
   }, []);
 
-  // Зміна статусу жанру
   const toggleGenreStatus = async (genreId) => {
     try {
       const data = await genreAPI.toggleStatus(genreId);
@@ -136,8 +129,8 @@ export default function Genres() {
   };
 
   return (
-    <div className="genres-page">
-      <div className="genres-header">
+    <div className="admin-page">
+      <div className="page-header">
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon">
@@ -147,13 +140,13 @@ export default function Genres() {
                 <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <h1>Управління жанрами</h1>
+            <h1 className="page-title">Управління жанрами</h1>
           </div>
           
           <div className="header-actions">
             <button 
               onClick={() => window.location.href = '/dashboard'}
-              className="back-btn"
+              className="btn btn-secondary"
             >
               ← Назад до Dashboard
             </button>
@@ -161,8 +154,8 @@ export default function Genres() {
         </div>
       </div>
 
-      <div className="genres-content">
-        <div className="genres-controls">
+      <div className="page-content">
+        <div className="page-controls">
           <div className="search-section">
             <input
               type="text"
@@ -175,7 +168,7 @@ export default function Genres() {
           
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="create-genre-btn"
+            className="btn btn-success"
           >
             + Створити жанр
           </button>
@@ -187,7 +180,7 @@ export default function Genres() {
           <div className="error">{error}</div>
         ) : (
           <>
-            <div className="genres-table">
+            <div className="data-table">
               <table>
                 <thead>
                   <tr>
@@ -202,15 +195,15 @@ export default function Genres() {
                   {filteredGenres.map((genre) => (
                     <tr key={genre._id}>
                       <td>
-                        <div className="genre-name">{genre.name}</div>
+                        <div className="font-weight-bold">{genre.name}</div>
                       </td>
                       <td>
-                        <div className="genre-description">
+                        <div className="text-secondary">
                           {genre.description || "Опис відсутній"}
                         </div>
                       </td>
                       <td>
-                        <span className={`status-badge ${genre.isActive ? 'active' : 'inactive'}`}>
+                        <span className={`badge ${genre.isActive ? 'badge-success' : 'badge-danger'}`}>
                           {genre.isActive ? 'Активний' : 'Неактивний'}
                         </span>
                       </td>
@@ -219,7 +212,7 @@ export default function Genres() {
                         <div className="action-buttons">
                           <button
                             onClick={() => toggleGenreStatus(genre._id)}
-                            className={`action-btn toggle ${genre.isActive ? 'deactivate' : 'activate'}`}
+                            className={`action-btn ${genre.isActive ? 'action-btn-delete' : 'action-btn-toggle'}`}
                             title={genre.isActive ? 'Деактивувати жанр' : 'Активувати жанр'}
                           >
                             {genre.isActive ? '🔴' : '🟢'}
@@ -227,7 +220,7 @@ export default function Genres() {
                           
                           <button
                             onClick={() => openEditModal(genre)}
-                            className="action-btn edit"
+                            className="action-btn action-btn-edit"
                             title="Редагувати жанр"
                           >
                             ✏️
@@ -235,7 +228,7 @@ export default function Genres() {
                           
                           <button
                             onClick={() => deleteGenre(genre._id)}
-                            className="action-btn delete"
+                            className="action-btn action-btn-delete"
                             title="Видалити жанр"
                           >
                             🗑️
@@ -248,12 +241,11 @@ export default function Genres() {
               </table>
             </div>
 
-            {/* Пагінація */}
             <div className="pagination">
               <button 
                 onClick={() => fetchGenres(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="pagination-btn"
+                className="btn btn-secondary"
               >
                 ← Попередня
               </button>
@@ -265,7 +257,7 @@ export default function Genres() {
               <button 
                 onClick={() => fetchGenres(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="pagination-btn"
+                className="btn btn-secondary"
               >
                 Наступна →
               </button>
@@ -274,98 +266,104 @@ export default function Genres() {
         )}
       </div>
 
-      {/* Модальне вікно створення жанру */}
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-header">
-              <h2>Створити новий жанр</h2>
+              <h2 className="modal-title">Створити новий жанр</h2>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="close-btn"
+                className="modal-close"
               >
                 ×
               </button>
             </div>
             
-            <form onSubmit={handleCreateGenre} className="modal-form">
-              <div className="form-group">
-                <label>Назва жанру *</label>
-                <input
-                  type="text"
-                  value={newGenre.name}
-                  onChange={(e) => setNewGenre({...newGenre, name: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Опис</label>
-                <textarea
-                  value={newGenre.description}
-                  onChange={(e) => setNewGenre({...newGenre, description: e.target.value})}
-                  rows="3"
-                  placeholder="Опис жанру (необов'язково)"
-                />
-              </div>
-              
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowCreateModal(false)} className="cancel-btn">
-                  Скасувати
-                </button>
-                <button type="submit" className="submit-btn">
-                  Створити жанр
-                </button>
-              </div>
-            </form>
+            <div className="modal-body">
+              <form onSubmit={handleCreateGenre}>
+                <div className="form-group">
+                  <label className="form-label">Назва жанру *</label>
+                  <input
+                    type="text"
+                    value={newGenre.name}
+                    onChange={(e) => setNewGenre({...newGenre, name: e.target.value})}
+                    required
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Опис</label>
+                  <textarea
+                    value={newGenre.description}
+                    onChange={(e) => setNewGenre({...newGenre, description: e.target.value})}
+                    rows="3"
+                    placeholder="Опис жанру (необов'язково)"
+                    className="form-textarea"
+                  />
+                </div>
+                
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
+                    Скасувати
+                  </button>
+                  <button type="submit" className="btn btn-success">
+                    Створити жанр
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Модальне вікно редагування жанру */}
       {showEditModal && editingGenre && (
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-header">
-              <h2>Редагувати жанр</h2>
+              <h2 className="modal-title">Редагувати жанр</h2>
               <button 
                 onClick={() => setShowEditModal(false)}
-                className="close-btn"
+                className="modal-close"
               >
                 ×
               </button>
             </div>
             
-            <form onSubmit={handleEditGenre} className="modal-form">
-              <div className="form-group">
-                <label>Назва жанру *</label>
-                <input
-                  type="text"
-                  value={editingGenre.name}
-                  onChange={(e) => setEditingGenre({...editingGenre, name: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Опис</label>
-                <textarea
-                  value={editingGenre.description || ""}
-                  onChange={(e) => setEditingGenre({...editingGenre, description: e.target.value})}
-                  rows="3"
-                  placeholder="Опис жанру (необов'язково)"
-                />
-              </div>
-              
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowEditModal(false)} className="cancel-btn">
-                  Скасувати
-                </button>
-                <button type="submit" className="submit-btn">
-                  Зберегти зміни
-                </button>
-              </div>
-            </form>
+            <div className="modal-body">
+              <form onSubmit={handleEditGenre}>
+                <div className="form-group">
+                  <label className="form-label">Назва жанру *</label>
+                  <input
+                    type="text"
+                    value={editingGenre.name}
+                    onChange={(e) => setEditingGenre({...editingGenre, name: e.target.value})}
+                    required
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Опис</label>
+                  <textarea
+                    value={editingGenre.description || ""}
+                    onChange={(e) => setEditingGenre({...editingGenre, description: e.target.value})}
+                    rows="3"
+                    placeholder="Опис жанру (необов'язково)"
+                    className="form-textarea"
+                  />
+                </div>
+                
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setShowEditModal(false)} className="btn btn-secondary">
+                    Скасувати
+                  </button>
+                  <button type="submit" className="btn btn-success">
+                    Зберегти зміни
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

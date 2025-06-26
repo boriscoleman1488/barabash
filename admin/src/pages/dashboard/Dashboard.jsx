@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext/AuthContext";
 import { logout } from "../../context/authContext/AuthActions";
-import "./Dashboard.css";
+import "../../styles/admin-common.css";
 
 export default function Dashboard() {
   const { user, dispatch } = useContext(AuthContext);
@@ -17,8 +17,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-header">
+    <div className="admin-page">
+      <div className="page-header">
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon">
@@ -28,17 +28,17 @@ export default function Dashboard() {
                 <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h1>BestFlix Admin</h1>
+            <h1 className="page-title">BestFlix Admin</h1>
           </div>
 
           <div className="header-actions">
-            <div className="user-info">
-              <span className="welcome-text">Вітаємо, {user?.firstName || user?.username}!</span>
-              <div className="user-avatar">
+            <div className="d-flex align-items-center gap-3">
+              <span className="text-secondary">Вітаємо, {user?.firstName || user?.username}!</span>
+              <div className="logo-icon" style={{ width: '32px', height: '32px', fontSize: '14px' }}>
                 {(user?.firstName?.[0] || user?.username?.[0] || 'A').toUpperCase()}
               </div>
             </div>
-            <button onClick={handleLogout} className="logout-btn">
+            <button onClick={handleLogout} className="btn btn-danger">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H9" stroke="currentColor" strokeWidth="2" />
                 <polyline points="16,17 21,12 16,7" stroke="currentColor" strokeWidth="2" />
@@ -50,78 +50,86 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="dashboard-content">
-        <div className="welcome-section">
-          <h2>Панель адміністратора</h2>
-          <p>Ласкаво просимо до адміністративної панелі BestFlix</p>
+      <div className="page-content">
+        <div className="text-center mb-5">
+          <h2 style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>
+            Панель адміністратора
+          </h2>
+          <p className="text-secondary">Ласкаво просимо до адміністративної панелі BestFlix</p>
         </div>
 
-        <div className="admin-info-grid">
-          <div className="info-card">
-            <div className="card-header">
-              <h3>Особиста інформація</h3>
-              <div className="card-icon">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Особиста інформація
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M20 21V19A4 4 0 0 0 16 15H8A4 4 0 0 0 4 19V21" stroke="currentColor" strokeWidth="2" />
                   <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
                 </svg>
               </div>
             </div>
-            <div className="card-content">
-              <div className="info-item">
-                <span className="label">Ім'я користувача:</span>
-                <span className="value">{user?.username}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Ім'я користувача:</span>
+                <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '14px' }}>{user?.username}</span>
               </div>
-              <div className="info-item">
-                <span className="label">Email:</span>
-                <span className="value">{user?.email}</span>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Email:</span>
+                <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '14px' }}>{user?.email}</span>
               </div>
-              <div className="info-item">
-                <span className="label">Ім'я:</span>
-                <span className="value">{user?.firstName || "Не вказано"}</span>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Ім'я:</span>
+                <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '14px' }}>{user?.firstName || "Не вказано"}</span>
               </div>
-              <div className="info-item">
-                <span className="label">Прізвище:</span>
-                <span className="value">{user?.lastName || "Не вказано"}</span>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Прізвище:</span>
+                <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '14px' }}>{user?.lastName || "Не вказано"}</span>
               </div>
             </div>
           </div>
 
-          <div className="info-card">
-            <div className="card-header">
-              <h3>Статус акаунту</h3>
-              <div className="card-icon">
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Статус акаунту
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <path d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="2" />
                 </svg>
               </div>
             </div>
-            <div className="card-content">
-              <div className="info-item">
-                <span className="label">Роль:</span>
-                <span className="value admin-badge">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Роль:</span>
+                <span className="badge badge-success d-flex align-items-center gap-1">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="currentColor" />
                   </svg>
                   Адміністратор
                 </span>
               </div>
-              <div className="info-item">
-                <span className="label">Дата реєстрації:</span>
-                <span className="value">{formatDate(user?.createdAt)}</span>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0', borderBottom: '1px solid var(--border-light)' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Дата реєстрації:</span>
+                <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '14px' }}>{formatDate(user?.createdAt)}</span>
               </div>
-              <div className="info-item">
-                <span className="label">Останній вхід:</span>
-                <span className="value">{formatDate(user?.lastLogin)}</span>
+              <div className="d-flex justify-content-between align-items-center" style={{ padding: '8px 0' }}>
+                <span style={{ fontWeight: '500', color: 'var(--text-secondary)', fontSize: '14px' }}>Останній вхід:</span>
+                <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '14px' }}>{formatDate(user?.lastLogin)}</span>
               </div>
             </div>
           </div>
 
-          <div className="info-card">
-            <div className="card-header">
-              <h3>Управління користувачами</h3>
-              <div className="card-icon">
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Управління користувачами
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M16 21V19A4 4 0 0 0 12 15H5A4 4 0 0 0 1 19V21" stroke="currentColor" strokeWidth="2" />
                   <circle cx="8.5" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
@@ -130,23 +138,25 @@ export default function Dashboard() {
                 </svg>
               </div>
             </div>
-            <div className="card-content">
-              <p className="card-description">
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '12px', lineHeight: '1.4' }}>
                 Переглядайте, створюйте та керуйте користувачами системи
               </p>
               <button
                 onClick={() => window.location.href = '/users'}
-                className="card-action-btn"
+                className="btn btn-primary"
               >
                 Перейти до користувачів
               </button>
             </div>
           </div>
 
-          <div className="info-card">
-            <div className="card-header">
-              <h3>Управління жанрами</h3>
-              <div className="card-icon">
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Управління жанрами
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M14.5 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V7.5L14.5 2Z" stroke="currentColor" strokeWidth="2" />
                   <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" />
@@ -156,23 +166,25 @@ export default function Dashboard() {
                 </svg>
               </div>
             </div>
-            <div className="card-content">
-              <p className="card-description">
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '12px', lineHeight: '1.4' }}>
                 Створюйте, редагуйте та керуйте жанрами фільмів
               </p>
               <button
                 onClick={() => window.location.href = '/genres'}
-                className="card-action-btn"
+                className="btn btn-primary"
               >
                 Перейти до жанрів
               </button>
             </div>
           </div>
 
-          <div className="info-card">
-            <div className="card-header">
-              <h3>Управління категоріями</h3>
-              <div className="card-icon">
+          <div style={{ background: 'var(--card-background)', borderRadius: 'var(--border-radius)', padding: '20px', boxShadow: 'var(--shadow-light)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4" style={{ paddingBottom: '12px', borderBottom: '1px solid var(--border-light)' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                Управління категоріями
+              </h3>
+              <div className="logo-icon" style={{ width: '32px', height: '32px' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                   <path d="M14.5 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V7.5L14.5 2Z" stroke="currentColor" strokeWidth="2" />
                   <polyline points="14,2 14,8 20,8" stroke="currentColor" strokeWidth="2" />
@@ -182,13 +194,13 @@ export default function Dashboard() {
                 </svg>
               </div>
             </div>
-            <div className="card-content">
-              <p className="card-description">
+            <div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '12px', lineHeight: '1.4' }}>
                 Створення, редагування та видалення категорій фільмів
               </p>
               <button
                 onClick={() => window.location.href = '/categories'}
-                className="card-action-btn"
+                className="btn btn-primary"
               >
                 Перейти до категорій
               </button>
@@ -197,6 +209,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-
   );
 }

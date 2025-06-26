@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../context/authContext/AuthContext";
 import { userAPI } from "../../api/userAPI";
-import "./Users.css";
+import "../../styles/admin-common.css";
 
 export default function Users() {
   const { user } = useContext(AuthContext);
@@ -21,7 +21,6 @@ export default function Users() {
     isAdmin: false
   });
 
-  // Отримання списку користувачів
   const fetchUsers = async (page = 1) => {
     try {
       setLoading(true);
@@ -41,7 +40,6 @@ export default function Users() {
     }
   };
 
-  // Створення нового користувача
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
@@ -67,7 +65,6 @@ export default function Users() {
     }
   };
 
-  // Перемикання статусу користувача (активний/неактивний)
   const toggleUserStatus = async (userId) => {
     try {
       const data = await userAPI.toggleStatus(userId);
@@ -83,7 +80,6 @@ export default function Users() {
     }
   };
 
-  // Перемикання ролі адміністратора
   const toggleAdminRole = async (userId) => {
     try {
       const data = await userAPI.toggleAdmin(userId);
@@ -99,7 +95,6 @@ export default function Users() {
     }
   };
 
-  // Видалення користувача
   const deleteUser = async (userId) => {
     if (!window.confirm("Ви впевнені, що хочете видалити цього користувача?")) {
       return;
@@ -119,7 +114,6 @@ export default function Users() {
     }
   };
 
-  // Фільтрація користувачів за пошуковим терміном
   const filteredUsers = users.filter(user => 
     user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -137,8 +131,8 @@ export default function Users() {
   }, []);
 
   return (
-    <div className="users-page">
-      <div className="users-header">
+    <div className="admin-page">
+      <div className="page-header">
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon">
@@ -148,13 +142,13 @@ export default function Users() {
                 <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <h1>Управління користувачами</h1>
+            <h1 className="page-title">Управління користувачами</h1>
           </div>
           
           <div className="header-actions">
             <button 
               onClick={() => window.location.href = '/dashboard'}
-              className="back-btn"
+              className="btn btn-secondary"
             >
               ← Назад до Dashboard
             </button>
@@ -162,8 +156,8 @@ export default function Users() {
         </div>
       </div>
 
-      <div className="users-content">
-        <div className="users-controls">
+      <div className="page-content">
+        <div className="page-controls">
           <div className="search-section">
             <input
               type="text"
@@ -176,7 +170,7 @@ export default function Users() {
           
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="create-user-btn"
+            className="btn btn-success"
           >
             + Створити користувача
           </button>
@@ -188,7 +182,7 @@ export default function Users() {
           <div className="error">{error}</div>
         ) : (
           <>
-            <div className="users-table">
+            <div className="data-table">
               <table>
                 <thead>
                   <tr>
@@ -205,13 +199,13 @@ export default function Users() {
                   {filteredUsers.map((userItem) => (
                     <tr key={userItem._id}>
                       <td>
-                        <div className="user-info">
-                          <div className="user-avatar">
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="logo-icon" style={{ width: '32px', height: '32px', fontSize: '12px' }}>
                             {(userItem.firstName?.[0] || userItem.username?.[0] || 'U').toUpperCase()}
                           </div>
-                          <div className="user-details">
-                            <div className="username">{userItem.username}</div>
-                            <div className="full-name">
+                          <div>
+                            <div className="font-weight-bold">{userItem.username}</div>
+                            <div className="text-muted" style={{ fontSize: '12px' }}>
                               {userItem.firstName} {userItem.lastName}
                             </div>
                           </div>
@@ -219,12 +213,12 @@ export default function Users() {
                       </td>
                       <td>{userItem.email}</td>
                       <td>
-                        <span className={`status-badge ${userItem.isActive ? 'active' : 'inactive'}`}>
+                        <span className={`badge ${userItem.isActive ? 'badge-success' : 'badge-danger'}`}>
                           {userItem.isActive ? 'Активний' : 'Неактивний'}
                         </span>
                       </td>
                       <td>
-                        <span className={`role-badge ${userItem.isAdmin ? 'admin' : 'user'}`}>
+                        <span className={`badge ${userItem.isAdmin ? 'badge-warning' : 'badge-info'}`}>
                           {userItem.isAdmin ? 'Адміністратор' : 'Користувач'}
                         </span>
                       </td>
@@ -234,7 +228,7 @@ export default function Users() {
                         <div className="action-buttons">
                           <button
                             onClick={() => toggleUserStatus(userItem._id)}
-                            className={`action-btn ${userItem.isActive ? 'deactivate' : 'activate'}`}
+                            className={`action-btn ${userItem.isActive ? 'action-btn-delete' : 'action-btn-toggle'}`}
                             title={userItem.isActive ? 'Деактивувати' : 'Активувати'}
                           >
                             {userItem.isActive ? '🚫' : '✅'}
@@ -242,7 +236,7 @@ export default function Users() {
                           
                           <button
                             onClick={() => toggleAdminRole(userItem._id)}
-                            className={`action-btn ${userItem.isAdmin ? 'remove-admin' : 'make-admin'}`}
+                            className="action-btn action-btn-edit"
                             title={userItem.isAdmin ? 'Зняти права адміністратора' : 'Надати права адміністратора'}
                             disabled={userItem._id === user?.id}
                           >
@@ -251,7 +245,7 @@ export default function Users() {
                           
                           <button
                             onClick={() => deleteUser(userItem._id)}
-                            className="action-btn delete"
+                            className="action-btn action-btn-delete"
                             title="Видалити користувача"
                             disabled={userItem._id === user?.id}
                           >
@@ -265,12 +259,11 @@ export default function Users() {
               </table>
             </div>
 
-            {/* Пагінація */}
             <div className="pagination">
               <button 
                 onClick={() => fetchUsers(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="pagination-btn"
+                className="btn btn-secondary"
               >
                 ← Попередня
               </button>
@@ -282,7 +275,7 @@ export default function Users() {
               <button 
                 onClick={() => fetchUsers(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="pagination-btn"
+                className="btn btn-secondary"
               >
                 Наступна →
               </button>
@@ -291,91 +284,98 @@ export default function Users() {
         )}
       </div>
 
-      {/* Модальне вікно створення користувача */}
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-header">
-              <h2>Створити нового користувача</h2>
+              <h2 className="modal-title">Створити нового користувача</h2>
               <button 
                 onClick={() => setShowCreateModal(false)}
-                className="close-btn"
+                className="modal-close"
               >
                 ×
               </button>
             </div>
             
-            <form onSubmit={handleCreateUser} className="modal-form">
-              <div className="form-group">
-                <label>Ім'я користувача *</label>
-                <input
-                  type="text"
-                  value={newUser.username}
-                  onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Email *</label>
-                <input
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Пароль *</label>
-                <input
-                  type="password"
-                  value={newUser.password}
-                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                  required
-                />
-              </div>
-              
-              <div className="form-row">
+            <div className="modal-body">
+              <form onSubmit={handleCreateUser}>
                 <div className="form-group">
-                  <label>Ім'я</label>
+                  <label className="form-label">Ім'я користувача *</label>
                   <input
                     type="text"
-                    value={newUser.firstName}
-                    onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                    value={newUser.username}
+                    onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+                    required
+                    className="form-input"
                   />
                 </div>
                 
                 <div className="form-group">
-                  <label>Прізвище</label>
+                  <label className="form-label">Email *</label>
                   <input
-                    type="text"
-                    value={newUser.lastName}
-                    onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                    required
+                    className="form-input"
                   />
                 </div>
-              </div>
-              
-              <div className="form-group checkbox-group">
-                <label>
+                
+                <div className="form-group">
+                  <label className="form-label">Пароль *</label>
+                  <input
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                    required
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Ім'я</label>
+                    <input
+                      type="text"
+                      value={newUser.firstName}
+                      onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                      className="form-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Прізвище</label>
+                    <input
+                      type="text"
+                      value={newUser.lastName}
+                      onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group checkbox-group">
                   <input
                     type="checkbox"
+                    id="isAdmin"
                     checked={newUser.isAdmin}
                     onChange={(e) => setNewUser({...newUser, isAdmin: e.target.checked})}
                   />
-                  Надати права адміністратора
-                </label>
-              </div>
-              
-              <div className="modal-actions">
-                <button type="button" onClick={() => setShowCreateModal(false)} className="cancel-btn">
-                  Скасувати
-                </button>
-                <button type="submit" className="submit-btn">
-                  Створити користувача
-                </button>
-              </div>
-            </form>
+                  <label htmlFor="isAdmin" className="form-label">
+                    Надати права адміністратора
+                  </label>
+                </div>
+                
+                <div className="modal-actions">
+                  <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
+                    Скасувати
+                  </button>
+                  <button type="submit" className="btn btn-success">
+                    Створити користувача
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
