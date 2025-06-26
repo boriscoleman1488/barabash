@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const genreSchema = new mongoose.Schema(
   {
@@ -7,8 +7,18 @@ const genreSchema = new mongoose.Schema(
     content: { type: Array },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 );
+
+genreSchema.virtual('movies', {
+  ref: 'Movie',
+  localField: '_id',
+  foreignField: 'genres'
+});
 
 // Індекси для пошуку
 genreSchema.index({ name: 'text', description: 'text' });

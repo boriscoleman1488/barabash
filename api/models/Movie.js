@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const movieSchema = new mongoose.Schema(
   {
@@ -12,7 +12,9 @@ const movieSchema = new mongoose.Schema(
     country: { type: String },
     film_language: { type: String },
     ageRating: { type: String, enum: ['G', 'PG', 'PG-13', 'R', 'NC-17'], default: 'PG' },
-    genres: [{ type: String }],
+    
+    genres: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Genre' }],
+    
     director: { type: String },
     cast: [{ type: String }],
     type: { type: String, enum: ['movie', 'series'], default: 'movie' },
@@ -35,7 +37,7 @@ const movieSchema = new mongoose.Schema(
       isFree: { type: Boolean, default: true },
     },
 
-    // Категорії
+    // Категорії (вже правильно)
     categories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Category' }],
     
     // Статистика
@@ -46,10 +48,11 @@ const movieSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Створюємо прості індекси без текстового пошуку та мовних налаштувань
+// Створюємо індекси
 movieSchema.index({ title: 1 });
 movieSchema.index({ description: 1 });
 movieSchema.index({ genres: 1 });
+movieSchema.index({ categories: 1 });
 movieSchema.index({ releaseYear: 1 });
 movieSchema.index({ type: 1 });
 movieSchema.index({ 'pricing.isFree': 1 });

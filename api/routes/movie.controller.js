@@ -158,6 +158,43 @@ const updateMovie = async (req, res) => {
       updateData.cast = updateData.cast.split(',').map(c => c.trim());
     }
 
+    if (updateData.categories) {
+      if (typeof updateData.categories === 'string') {
+        try {
+          // Якщо це JSON рядок
+          const parsed = JSON.parse(updateData.categories);
+          updateData.categories = parsed.filter(cat => cat && cat.trim() !== '');
+        } catch {
+          // Якщо це звичайний рядок, розділений комами
+          updateData.categories = updateData.categories
+            .split(',')
+            .map(cat => cat.trim())
+            .filter(cat => cat !== '');
+        }
+      }
+      // Видаляємо пусті значення
+      if (Array.isArray(updateData.categories)) {
+        updateData.categories = updateData.categories.filter(cat => cat && cat !== '');
+      }
+    }
+
+    // Обробка числових полів
+    if (updateData.duration) {
+      updateData.duration = parseInt(updateData.duration);
+    }
+    if (updateData.releaseYear) {
+      updateData.releaseYear = parseInt(updateData.releaseYear);
+    }
+    if (updateData.views) {
+      updateData.views = parseInt(updateData.views) || 0;
+    }
+    if (updateData.likes) {
+      updateData.likes = parseInt(updateData.likes) || 0;
+    }
+    if (updateData.rating) {
+      updateData.rating = parseFloat(updateData.rating) || 0;
+    }
+
     // Обробка сезонів
     if (updateData.seasons && typeof updateData.seasons === 'string') {
       try {
@@ -175,6 +212,18 @@ const updateMovie = async (req, res) => {
         updateData.pricing = { buyPrice: 0, isFree: true };
       }
     }
+
+    // Видаляємо пусті поля
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === '' || updateData[key] === null || updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
+
+    // Виводимо дані перед оновленням
+    console.log('=== ДАНІ ДЛЯ ОНОВЛЕННЯ У БАЗІ ===');
+    console.log('updateData:', JSON.stringify(updateData, null, 2));
+    console.log('=== КІНЕЦЬ ДАНИХ ===');
 
     const updatedMovie = await Movie.findByIdAndUpdate(id, updateData, { new: true });
 

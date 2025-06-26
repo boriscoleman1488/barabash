@@ -47,7 +47,6 @@ export default function Movies() {
   const languages = [
     { code: "uk", name: "Українська" },
     { code: "en", name: "Англійська" },
-    { code: "ru", name: "Російська" },
     { code: "de", name: "Німецька" },
     { code: "fr", name: "Французька" },
     { code: "es", name: "Іспанська" },
