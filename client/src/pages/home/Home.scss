@@ -909,19 +909,6 @@
     text-align: center;
   }
   
-  .movies-grid,
-  .loading-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-  
-  .movie-card .movie-info {
-    padding: 16px;
-    
-    .movie-title {
-      font-size: 16px;
-    }
-  }
-  
   .search-input-wrapper {
     padding: 10px 16px;
     
@@ -933,6 +920,19 @@
     
     .search-input {
       font-size: 14px;
+    }
+  }
+  
+  .movies-grid,
+  .loading-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  
+  .movie-card .movie-info {
+    padding: 16px;
+    
+    .movie-title {
+      font-size: 16px;
     }
   }
 }
