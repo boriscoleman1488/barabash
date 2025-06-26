@@ -242,6 +242,13 @@ const Categories = () => {
                         <img src={movie.posterImage} alt={movie.title} />
                         <div className="movie-overlay">
                           <div className="overlay-content">
+                            <Link to={`/movie/${movie._id}`} className="info-btn">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                            </Link>
                             <Link to="/watch" state={{ movie }} className="play-btn">
                               <svg viewBox="0 0 24 24" fill="none">
                                 <polygon points="5,3 19,12 5,21" fill="currentColor"/>
@@ -276,7 +283,9 @@ const Categories = () => {
                       </div>
                       
                       <div className="movie-info">
-                        <h4 className="movie-title">{movie.title}</h4>
+                        <h4 className="movie-title">
+                          <Link to={`/movie/${movie._id}`}>{movie.title}</Link>
+                        </h4>
                         <p className="movie-year">{movie.releaseYear}</p>
                         
                         <div className="movie-genres">

@@ -12,6 +12,7 @@ import Watch from "./pages/watch/Watch";
 import Login from "./pages/login/Login";
 import Profile from "./pages/profile/Profile";
 import Categories from "./pages/categories/Categories";
+import MovieDetail from "./pages/movie-detail/MovieDetail";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { useContext } from "react";
 import { AuthContext } from "./authContext/AuthContext";
@@ -45,6 +46,7 @@ const App = () => {
           <>
             <Route path="/movies" element={<Home type="movies" />} />
             <Route path="/series" element={<Home type="series" />} />
+            <Route path="/movie/:id" element={<MovieDetail />} />
             <Route path="/watch" element={<Watch />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/categories" element={<Categories />} />
