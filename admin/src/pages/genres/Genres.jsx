@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { genreAPI } from "../../api/genreAPI";
 import "./Genres.css";
 
@@ -131,8 +131,7 @@ export default function Genres() {
                 <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            // Використати user десь в JSX, наприклад:
-            // <h1>Управління жанрами - {user?.firstName || user?.username}</h1>
+            <h1>Управління жанрами</h1>
           </div>
           
           <div className="header-actions">
