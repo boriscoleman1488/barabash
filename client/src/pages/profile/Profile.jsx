@@ -195,7 +195,6 @@ const Profile = () => {
               <p className="username">@{profileData?.username}</p>
               <p className="email">{profileData?.email}</p>
               <div className="user-badges">
-                <span className="badge premium">Premium User</span>
                 <span className="badge member">
                   Учасник з {formatDate(profileData?.createdAt)}
                 </span>
@@ -260,16 +259,6 @@ const Profile = () => {
                 <line x1="1" y1="10" x2="23" y2="10" stroke="currentColor" strokeWidth="2"/>
               </svg>
               Оплати
-            </button>
-            <button 
-              className={`nav-tab ${activeTab === 'settings' ? 'active' : ''}`}
-              onClick={() => handleTabChange('settings')}
-            >
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
-                <path d="M19.4 15A1.65 1.65 0 0 0 21 13.09A1.65 1.65 0 0 0 19.4 9A1.65 1.65 0 0 0 21 10.91A1.65 1.65 0 0 0 19.4 15Z" stroke="currentColor" strokeWidth="2"/>
-              </svg>
-              Налаштування
             </button>
           </div>
         </div>
@@ -543,61 +532,6 @@ const Profile = () => {
                   ))}
                 </div>
               )}
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="settings-content">
-              <div className="section-header">
-                <h3>Налаштування акаунту</h3>
-              </div>
-              
-              <div className="settings-grid">
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Сповіщення</h4>
-                    <p>Отримувати сповіщення про нові фільми та акції</p>
-                  </div>
-                  <label className="toggle">
-                    <input type="checkbox" defaultChecked />
-                    <span className="slider"></span>
-                  </label>
-                </div>
-                
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Автовідтворення</h4>
-                    <p>Автоматично відтворювати трейлери при наведенні</p>
-                  </div>
-                  <label className="toggle">
-                    <input type="checkbox" defaultChecked />
-                    <span className="slider"></span>
-                  </label>
-                </div>
-                
-                <div className="setting-item">
-                  <div className="setting-info">
-                    <h4>Якість відео</h4>
-                    <p>Автоматично підбирати якість відео</p>
-                  </div>
-                  <select className="setting-select">
-                    <option>Автоматично</option>
-                    <option>720p</option>
-                    <option>1080p</option>
-                    <option>4K</option>
-                  </select>
-                </div>
-                
-                <div className="setting-item danger">
-                  <div className="setting-info">
-                    <h4>Видалити акаунт</h4>
-                    <p>Назавжди видалити ваш акаунт та всі дані</p>
-                  </div>
-                  <button className="danger-btn">
-                    Видалити
-                  </button>
-                </div>
-              </div>
             </div>
           )}
         </div>

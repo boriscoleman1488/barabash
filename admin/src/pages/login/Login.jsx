@@ -184,30 +184,6 @@ export default function Login() {
             )}
           </button>
         </form>
-
-        <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border-color)' }}>
-          <div className="text-center">
-            <h4 style={{ color: 'var(--text-primary)', fontSize: '14px', margin: '0 0 10px 0', fontWeight: '500' }}>
-              Демо дані для входу:
-            </h4>
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: '6px', 
-              background: 'var(--background-color)', 
-              padding: '12px', 
-              borderRadius: 'var(--border-radius-small)', 
-              border: '1px solid var(--border-color)' 
-            }}>
-              <span style={{ fontSize: '12px', color: 'var(--text-primary)', fontFamily: 'Courier New, monospace' }}>
-                <strong style={{ color: 'var(--primary-color)' }}>Email:</strong> admin@bestflix.com
-              </span>
-              <span style={{ fontSize: '12px', color: 'var(--text-primary)', fontFamily: 'Courier New, monospace' }}>
-                <strong style={{ color: 'var(--primary-color)' }}>Пароль:</strong> admin123
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <style jsx>{`

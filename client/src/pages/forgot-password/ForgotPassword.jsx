@@ -15,8 +15,6 @@ export default function ForgotPassword() {
     setMessage("");
 
     try {
-      // Тут буде логіка відправки email для відновлення паролю
-      // Поки що просто показуємо повідомлення
       setTimeout(() => {
         setMessage("Інструкції для відновлення паролю надіслано на ваш email");
         setLoading(false);

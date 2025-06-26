@@ -173,26 +173,6 @@ export default function Login() {
                 <Link to="/register" className="auth-link">Зареєструватися</Link>
               </p>
             </div>
-
-            <div className="demo-section">
-              <div className="demo-header">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M9,12L11,14L15,10" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                <span>Демо дані для входу</span>
-              </div>
-              <div className="demo-credentials">
-                <div className="demo-item">
-                  <span className="demo-label">Email:</span>
-                  <span className="demo-value">admin@bestflix.com</span>
-                </div>
-                <div className="demo-item">
-                  <span className="demo-label">Пароль:</span>
-                  <span className="demo-value">admin123</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

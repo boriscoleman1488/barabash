@@ -26,26 +26,6 @@ async function createAdminUser() {
       process.exit(0);
     }
 
-    // Створюємо адміністратора
-    const adminUser = await User.create({
-      username: 'admin',
-      email: 'admin@bestflix.com',
-      password: CryptoJS.AES.encrypt(
-        'admin123',
-        process.env.SECRET_KEY_FOR_CRYPTOJS
-      ).toString(),
-      firstName: 'Admin',
-      lastName: 'User',
-      isAdmin: true,
-      isActive: true,
-      isEmailVerified: true
-    });
-
-    console.log('✅ Адміністратор створений успішно!');
-    console.log('📧 Email: admin@bestflix.com');
-    console.log('🔑 Пароль: admin123');
-    console.log('👤 Username: admin');
-    
   } catch (error) {
     console.error('❌ Помилка створення адміністратора:', error.message);
   } finally {

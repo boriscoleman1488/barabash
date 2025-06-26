@@ -144,11 +144,7 @@ export default function Register() {
         <div className="auth-header">
           <div className="brand-logo">
             <div className="logo-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2"/>
-                <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2"/>
-                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2"/>
-              </svg>
+          
             </div>
             <span className="brand-name">BestFlix</span>
           </div>
