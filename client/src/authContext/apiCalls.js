@@ -38,12 +38,13 @@ export const login = async (user, dispatch) => {
   try {
     const res = await apiClient.post("/auth/login", user);
     
-    if (res.data.success !== false) {
+    // Перевіряємо чи отримали валідну відповідь з необхідними даними
+    if (res.data && res.data.success !== false && res.data.accessToken) {
       dispatch(loginSuccess(res.data));
       return res.data;
     } else {
       dispatch(loginFailure());
-      throw new Error(res.data.message || "Помилка входу");
+      throw new Error(res.data?.message || "Помилка входу: відсутній токен доступу");
     }
   } catch (err) {
     dispatch(loginFailure());
