@@ -159,8 +159,8 @@ const MovieDetail = () => {
     if (hasAccess || movie?.pricing?.isFree) {
       navigate('/watch', { state: { movie } });
     } else {
-      // Redirect to payment or show payment modal
-      alert(`Для перегляду цього фільму потрібно придбати доступ за ${movie?.pricing?.buyPrice} грн`);
+      // Redirect to payment page
+      navigate(`/payment/${id}`);
     }
   };
 
@@ -406,6 +406,10 @@ const MovieDetail = () => {
                   <svg viewBox="0 0 24 24" fill="none">
                     <polygon points="12,2 15.09,8.26 22,9 17,14 18.18,21 12,17.77 5.82,21 7,14 2,9 8.91,8.26" fill="currentColor"/>
                   </svg>
+                </div>
+                <div className="stat-info">
+                  <span className="stat-number">{movie.rating || 0}</span>
+                  <span className="stat-label">Рейтинг</span>
                 </div>
               </div>
             </div>

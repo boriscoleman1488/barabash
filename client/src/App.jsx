@@ -14,6 +14,8 @@ import Profile from "./pages/profile/Profile";
 import Categories from "./pages/categories/Categories";
 import Genres from "./pages/genres/Genres";
 import MovieDetail from "./pages/movie-detail/MovieDetail";
+import Payment from "./pages/payment/Payment";
+import PaymentSuccess from "./pages/payment/PaymentSuccess";
 import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { useContext } from "react";
 import { AuthContext } from "./authContext/AuthContext";
@@ -48,6 +50,8 @@ const App = () => {
             <Route path="/movies" element={<Home type="movies" />} />
             <Route path="/series" element={<Home type="series" />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
+            <Route path="/payment/:id" element={<Payment />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/watch" element={<Watch />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/categories" element={<Categories />} />
