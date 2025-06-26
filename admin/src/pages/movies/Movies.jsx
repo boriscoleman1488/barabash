@@ -29,7 +29,7 @@ export default function Movies() {
     title: "",
     description: "",
     releaseYear: new Date().getFullYear(),
-    duration: "",
+    duration: 0,
     type: "movie",
     film_language: "",
     country: "",
@@ -121,16 +121,16 @@ export default function Movies() {
         }
       });
       
-      // Додаємо файли
-      if (posterFile) {
+      // Додаємо файли тільки якщо вони існують
+      if (posterFile && posterFile instanceof File) {
         formData.append('posterImage', posterFile);
       }
       
-      if (trailerFile) {
+      if (trailerFile && trailerFile instanceof File) {
         formData.append('trailerUrl', trailerFile);
       }
       
-      if (videoFile && newMovie.type === 'movie') {
+      if (videoFile && videoFile instanceof File && newMovie.type === 'movie') {
         formData.append('videoUrl', videoFile);
       }
       
@@ -216,16 +216,16 @@ export default function Movies() {
         }
       });
       
-      // Додаємо файли
-      if (posterFile) {
+      // Додаємо файли тільки якщо вони існують
+      if (posterFile && posterFile instanceof File) {
         formData.append('posterImage', posterFile);
       }
       
-      if (trailerFile) {
+      if (trailerFile && trailerFile instanceof File) {
         formData.append('trailerUrl', trailerFile);
       }
       
-      if (videoFile && editingMovie.type === 'movie') {
+      if (videoFile && videoFile instanceof File && editingMovie.type === 'movie') {
         formData.append('videoUrl', videoFile);
       }
       
@@ -383,7 +383,7 @@ export default function Movies() {
       title: "",
       description: "",
       releaseYear: new Date().getFullYear(),
-      duration: "",
+      duration: 0,
       type: "movie",
       film_language: "",
       country: "",
@@ -731,7 +731,7 @@ export default function Movies() {
                     <input
                       type="number"
                       value={newMovie.releaseYear}
-                      onChange={(e) => setNewMovie({...newMovie, releaseYear: e.target.value})}
+                      onChange={(e) => setNewMovie({...newMovie, releaseYear: parseInt(e.target.value) || new Date().getFullYear()})}
                       required
                       min="1900"
                       max={new Date().getFullYear()}
@@ -746,7 +746,7 @@ export default function Movies() {
                     <input
                       type="number"
                       value={newMovie.duration}
-                      onChange={(e) => setNewMovie({...newMovie, duration: e.target.value})}
+                      onChange={(e) => setNewMovie({...newMovie, duration: parseInt(e.target.value) || 0})}
                       min="1"
                       className="form-input"
                     />
@@ -868,7 +868,7 @@ export default function Movies() {
                         ...newMovie, 
                         pricing: {
                           ...newMovie.pricing,
-                          buyPrice: parseFloat(e.target.value)
+                          buyPrice: parseFloat(e.target.value) || 0
                         }
                       })}
                       min="0"

@@ -83,7 +83,7 @@ const uploadFields = multer({
     },
   }),
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB
+    fileSize: 1000 * 1024 * 1024, 
   },
 }).fields([
   { name: 'posterImage', maxCount: 1 },

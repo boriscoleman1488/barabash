@@ -14,18 +14,51 @@ const createMovie = async (req, res) => {
 
     // Обробка завантажених файлів
     if (req.files) {
-      if (req.files.posterImage) {
+      console.log('Файли отримані:', req.files);
+      if (req.files.posterImage && req.files.posterImage[0]) {
+        console.log('Poster path:', req.files.posterImage[0].path);
         movieData.posterImage = req.files.posterImage[0].path;
       }
-      if (req.files.trailerUrl) {
+      if (req.files.trailerUrl && req.files.trailerUrl[0]) {
+        console.log('Trailer path:', req.files.trailerUrl[0].path);
         movieData.trailerUrl = req.files.trailerUrl[0].path;
       }
-      if (req.files.videoUrl) {
+      if (req.files.videoUrl && req.files.videoUrl[0]) {
+        console.log('Video path:', req.files.videoUrl[0].path);
         movieData.videoUrl = req.files.videoUrl[0].path;
       }
+    } else {
+      console.log('Файли не отримані або req.files undefined');
     }
 
-    // Валідація обов'язкових полів
+    // Додаткова перевірка для запобігання передачі пустих об'єктів
+    if (!movieData.posterImage || typeof movieData.posterImage === 'object' || movieData.posterImage === '{}' || movieData.posterImage === '') {
+      delete movieData.posterImage;
+    }
+    if (!movieData.trailerUrl || typeof movieData.trailerUrl === 'object' || movieData.trailerUrl === '{}' || movieData.trailerUrl === '') {
+      delete movieData.trailerUrl;
+    }
+    if (!movieData.videoUrl || typeof movieData.videoUrl === 'object' || movieData.videoUrl === '{}' || movieData.videoUrl === '') {
+      delete movieData.videoUrl;
+    }
+
+    // Очищення всіх полів з пустими об'єктами (але НЕ пустими рядками)
+    Object.keys(movieData).forEach(key => {
+      if (typeof movieData[key] === 'object' && movieData[key] !== null && !Array.isArray(movieData[key]) && Object.keys(movieData[key]).length === 0) {
+        delete movieData[key];
+      }
+    });
+
+    // Обробка пустих рядків для необов'язкових полів
+    if (movieData.film_language === '') {
+      delete movieData.film_language; // Видаляємо пустий рядок, щоб не зберігати його в базі
+    }
+    if (movieData.country === '') {
+      delete movieData.country;
+    }
+    if (movieData.director === '') {
+      delete movieData.director;
+    }
     if (!movieData.title || !movieData.description || !movieData.posterImage || !movieData.releaseYear) {
       return res.status(400).json({
         success: false,
