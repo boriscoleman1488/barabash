@@ -51,6 +51,37 @@
       display: flex;
       align-items: center;
 
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 10px;
+        background: rgba(229, 9, 20, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .avatar-initials {
+          font-size: 16px;
+          font-weight: 600;
+          color: white;
+        }
+        
+        &:hover {
+          border-color: var(--primary-color);
+          transform: scale(1.05);
+        }
+      }
+
       .icon {
         margin: 0px 15px;
         cursor: pointer;
@@ -61,20 +92,6 @@
         &:hover {
           background: rgba(255, 255, 255, 0.1);
           color: var(--primary-color);
-        }
-      }
-
-      img {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        object-fit: cover;
-        cursor: pointer;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        
-        &:hover {
-          border-color: var(--primary-color);
         }
       }
 
@@ -122,6 +139,17 @@
         }
       }
     }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

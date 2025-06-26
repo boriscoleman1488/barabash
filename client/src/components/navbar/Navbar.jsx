@@ -1,8 +1,7 @@
 import { ArrowDropDown, Notifications } from "@material-ui/icons";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import "./Navbar.scss";
-import { useContext } from "react";
 import { AuthContext } from "../../authContext/AuthContext";
 import { logout } from "../../authContext/AuthActions";
 
@@ -13,6 +12,13 @@ const Navbar = () => {
   window.onscroll = () => {
     setIsScrolled(window.pageYOffset === 0 ? false : true);
     return () => (window.onscroll = null);
+  };
+
+  const getUserInitials = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    return (user?.username?.[0] || 'U').toUpperCase();
   };
 
   return (
@@ -37,17 +43,20 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="right">
-          <img
-            src="https://images.pexels.com/photos/6899260/pexels-photo-6899260.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500"
-            alt=""
-          />
+          <div className="user-avatar">
+            {user?.profilePicture ? (
+              <img src={user.profilePicture} alt="Profile" />
+            ) : (
+              <span className="avatar-initials">{getUserInitials()}</span>
+            )}
+          </div>
           <div className="profile">
             <ArrowDropDown className="icon" />
             <div className="options">
               <Link to="/profile" className="link">
                 <span>Профіль</span>
               </Link>
-              <span onClick={() => dispatch(logout())}>Logout</span>
+              <span onClick={() => dispatch(logout())}>Вийти</span>
             </div>
           </div>
         </div>
