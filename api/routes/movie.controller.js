@@ -3,6 +3,11 @@ const { deleteFromCloudinary, getPublicIdFromUrl } = require('../config/cloudina
 
 const createMovie = async (req, res) => {
   try {
+    console.log('=== ПОЧАТКОВІ ДАНІ З ФОРМИ ===');
+    console.log('req.body:', JSON.stringify(req.body, null, 2));
+    console.log('req.files:', req.files);
+    console.log('=== КІНЕЦЬ ПОЧАТКОВИХ ДАНИХ ===');
+    
     const movieData = { ...req.body };
 
     // Обробка завантажених файлів
@@ -18,7 +23,7 @@ const createMovie = async (req, res) => {
       }
     }
 
-    // Валідація обов'язкових полів відповідно до моделі
+    // Валідація обов'язкових полів
     if (!movieData.title || !movieData.description || !movieData.posterImage || !movieData.releaseYear) {
       return res.status(400).json({
         success: false,
@@ -26,15 +31,60 @@ const createMovie = async (req, res) => {
       });
     }
 
-    // Обробка жанрів як масиву рядків
-    if (movieData.genres && typeof movieData.genres === 'string') {
-      movieData.genres = movieData.genres.split(',').map(g => g.trim());
+    // Перетворення числових полів
+    if (movieData.duration) {
+      movieData.duration = parseInt(movieData.duration);
+    }
+    if (movieData.releaseYear) {
+      movieData.releaseYear = parseInt(movieData.releaseYear);
+    }
+    if (movieData.views) {
+      movieData.views = parseInt(movieData.views) || 0;
+    }
+    if (movieData.likes) {
+      movieData.likes = parseInt(movieData.likes) || 0;
+    }
+    if (movieData.rating) {
+      movieData.rating = parseFloat(movieData.rating) || 0;
     }
 
-    // Обробка акторів як масиву рядків
+    // Обробка жанрів
+    if (movieData.genres) {
+      if (typeof movieData.genres === 'string') {
+        try {
+          movieData.genres = JSON.parse(movieData.genres);
+        } catch {
+          movieData.genres = movieData.genres.split(',').map(g => g.trim());
+        }
+      }
+    }
+
+    // Обробка акторів
     if (movieData.cast && typeof movieData.cast === 'string') {
       movieData.cast = movieData.cast.split(',').map(c => c.trim());
     }
+
+    // Обробка pricing
+    if (movieData['pricing.buyPrice'] !== undefined) {
+      movieData.pricing = {
+        buyPrice: parseFloat(movieData['pricing.buyPrice']) || 0,
+        isFree: movieData['pricing.isFree'] === 'true'
+      };
+      delete movieData['pricing.buyPrice'];
+      delete movieData['pricing.isFree'];
+    }
+
+    // Видаляємо пусті поля
+    Object.keys(movieData).forEach(key => {
+      if (movieData[key] === '' || movieData[key] === null || movieData[key] === undefined) {
+        delete movieData[key];
+      }
+    });
+
+    // Виводимо дані перед збереженням у базу
+    console.log('=== ДАНІ ДЛЯ ЗБЕРЕЖЕННЯ У БАЗУ ===');
+    console.log('movieData:', JSON.stringify(movieData, null, 2));
+    console.log('=== КІНЕЦЬ ДАНИХ ===');
 
     const newMovie = new Movie(movieData);
     const savedMovie = await newMovie.save();

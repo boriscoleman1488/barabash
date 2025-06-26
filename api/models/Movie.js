@@ -46,7 +46,7 @@ const movieSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-movieSchema.index({ title: 'text', description: 'text' });
+movieSchema.index({ title: 'text', description: 'text' }, { default_language: 'english' });
 movieSchema.index({ genres: 1 });
 movieSchema.index({ releaseYear: 1 });
 movieSchema.index({ type: 1 });

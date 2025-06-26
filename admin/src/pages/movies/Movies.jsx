@@ -82,11 +82,21 @@ export default function Movies() {
       // Додаємо текстові поля
       Object.keys(newMovie).forEach(key => {
         if (key === 'cast') {
-          formData.append(key, newMovie.cast);
+          // Якщо cast - це масив, перетворюємо в рядок
+          const castString = Array.isArray(newMovie.cast) 
+            ? newMovie.cast.join(', ') 
+            : newMovie.cast;
+          formData.append(key, castString);
         } else if (key === 'genres') {
-          formData.append(key, JSON.stringify(newMovie.genres));
+          // Перетворюємо масив жанрів у рядок через кому
+          const genresString = Array.isArray(newMovie.genres) 
+            ? newMovie.genres.join(', ') 
+            : newMovie.genres;
+          formData.append(key, genresString);
         } else if (key === 'pricing') {
-          formData.append('pricing', JSON.stringify(newMovie.pricing));
+          // Розгортаємо об'єкт pricing
+          formData.append('pricing.buyPrice', newMovie.pricing.buyPrice || 0);
+          formData.append('pricing.isFree', newMovie.pricing.isFree || false);
         } else {
           formData.append(key, newMovie[key]);
         }
