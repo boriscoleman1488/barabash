@@ -20,7 +20,7 @@ export default function Movies() {
     duration: "",
     releaseYear: "",
     country: "",
-    language: "",
+    film_language: "",
     ageRating: "PG",
     genres: [],
     director: "",
@@ -171,7 +171,7 @@ export default function Movies() {
           duration: "",
           releaseYear: "",
           country: "",
-          language: "",
+          film_language: "",
           ageRating: "PG",
           genres: [],
           director: "",
@@ -498,7 +498,7 @@ export default function Movies() {
                       </td>
                       <td>
                         <span className="badge badge-secondary" style={{ fontSize: '10px' }}>
-                          {getLanguageName(movie.language)}
+                          {getLanguageName(movie.film_language)}
                         </span>
                       </td>
                       <td>
@@ -730,8 +730,8 @@ export default function Movies() {
                   <div className="form-group">
                     <label className="form-label">Мова</label>
                     <select
-                      value={newMovie.language}
-                      onChange={(e) => setNewMovie({...newMovie, language: e.target.value})}
+                      value={newMovie.film_language}
+                      onChange={(e) => setNewMovie({...newMovie, film_language: e.target.value})}
                       className="form-select"
                     >
                       <option value="">Оберіть мову</option>
@@ -1081,8 +1081,8 @@ export default function Movies() {
                   <div className="form-group">
                     <label className="form-label">Мова</label>
                     <select
-                      value={editingMovie.language || ""}
-                      onChange={(e) => setEditingMovie({...editingMovie, language: e.target.value})}
+                      value={editingMovie.film_language || ""}
+                      onChange={(e) => setEditingMovie({...editingMovie, film_language: e.target.value})}
                       className="form-select"
                     >
                       <option value="">Оберіть мову</option>

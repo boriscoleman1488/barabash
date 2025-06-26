@@ -10,7 +10,7 @@ const movieSchema = new mongoose.Schema(
     duration: { type: Number },
     releaseYear: { type: Number, required: true },
     country: { type: String },
-    language: { type: String },
+    film_language: { type: String },
     ageRating: { type: String, enum: ['G', 'PG', 'PG-13', 'R', 'NC-17'], default: 'PG' },
     genres: [{ type: String }],
     director: { type: String },
@@ -53,7 +53,7 @@ movieSchema.index({ genres: 1 });
 movieSchema.index({ releaseYear: 1 });
 movieSchema.index({ type: 1 });
 movieSchema.index({ 'pricing.isFree': 1 });
-movieSchema.index({ language: 1 });
+movieSchema.index({ film_language: 1 });
 movieSchema.index({ country: 1 });
 
 module.exports = mongoose.model("Movie", movieSchema);
