@@ -13,6 +13,25 @@ export const userAPI = {
     return response.data;
   },
 
+  // Оновити фото профілю
+  updateProfileImage: async (userId, imageFile) => {
+    const formData = new FormData();
+    formData.append('profileImage', imageFile);
+    
+    const response = await apiClient.post(`/users/${userId}/profile-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  // Видалити фото профілю
+  removeProfileImage: async (userId) => {
+    const response = await apiClient.delete(`/users/${userId}/profile-image`);
+    return response.data;
+  },
+
   // Додати до улюблених
   addToFavorites: async (movieId) => {
     const response = await apiClient.post('/users/favorites', { movieId });

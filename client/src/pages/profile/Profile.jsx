@@ -16,6 +16,10 @@ const Profile = () => {
   const [error, setError] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({});
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (user?.accessToken) {
@@ -116,6 +120,76 @@ const Profile = () => {
     }
   };
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Перевіряємо тип файлу
+      if (!file.type.startsWith('image/')) {
+        alert('Будь ласка, оберіть файл зображення');
+        return;
+      }
+      
+      // Перевіряємо розмір файлу (максимум 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Розмір файлу не повинен перевищувати 5MB');
+        return;
+      }
+      
+      setSelectedImage(file);
+      
+      // Створюємо превью
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (!selectedImage) return;
+    
+    try {
+      setUploadingImage(true);
+      const data = await userAPI.updateProfileImage(profileData._id, selectedImage);
+      
+      if (data.success) {
+        setProfileData(prev => ({
+          ...prev,
+          profilePicture: data.user.profilePicture
+        }));
+        setShowImageModal(false);
+        setSelectedImage(null);
+        setImagePreview(null);
+        alert('Фото профілю успішно оновлено!');
+      }
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      alert('Помилка завантаження зображення');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (!window.confirm('Ви впевнені, що хочете видалити фото профілю?')) return;
+    
+    try {
+      const data = await userAPI.removeProfileImage(profileData._id);
+      
+      if (data.success) {
+        setProfileData(prev => ({
+          ...prev,
+          profilePicture: ''
+        }));
+        alert('Фото профілю видалено');
+      }
+    } catch (err) {
+      console.error('Error removing image:', err);
+      alert('Помилка видалення зображення');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('uk-UA');
   };
@@ -140,6 +214,13 @@ const Profile = () => {
         {statusInfo.text}
       </span>
     );
+  };
+
+  const getUserInitials = () => {
+    if (profileData?.firstName && profileData?.lastName) {
+      return `${profileData.firstName[0]}${profileData.lastName[0]}`.toUpperCase();
+    }
+    return (profileData?.username?.[0] || 'U').toUpperCase();
   };
 
   if (loading) {
@@ -178,8 +259,23 @@ const Profile = () => {
         <div className="profile-hero">
           <div className="hero-background"></div>
           <div className="hero-content">
-            <div className="user-avatar-large">
-              {(profileData?.firstName?.[0] || profileData?.username?.[0] || 'U').toUpperCase()}
+            <div className="user-avatar-section">
+              <div className="user-avatar-large">
+                {profileData?.profilePicture ? (
+                  <img src={profileData.profilePicture} alt="Profile" />
+                ) : (
+                  <span className="avatar-initials">{getUserInitials()}</span>
+                )}
+                <button 
+                  className="change-avatar-btn"
+                  onClick={() => setShowImageModal(true)}
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M23 19A2 2 0 0 1 21 21H3A2 2 0 0 1 1 19V8A2 2 0 0 1 3 6H7L9 4H15L17 6H21A2 2 0 0 1 23 8V19Z" stroke="currentColor" strokeWidth="2"/>
+                    <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div className="user-info">
               <h1>{profileData?.firstName} {profileData?.lastName}</h1>
@@ -527,6 +623,99 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* Image Upload Modal */}
+      {showImageModal && (
+        <div className="modal-overlay" onClick={() => setShowImageModal(false)}>
+          <div className="image-upload-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Змінити фото профілю</h3>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowImageModal(false)}
+              >
+                <svg viewBox="0 0 24 24" fill="none">
+                  <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
+                  <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="modal-content">
+              <div className="image-preview-container">
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="image-preview" />
+                ) : profileData?.profilePicture ? (
+                  <img src={profileData.profilePicture} alt="Current" className="image-preview" />
+                ) : (
+                  <div className="avatar-placeholder">
+                    <span>{getUserInitials()}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="upload-controls">
+                <label className="file-input-label">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M21 15V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V15" stroke="currentColor" strokeWidth="2"/>
+                    <polyline points="17,8 12,3 7,8" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                  Обрати фото
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleImageSelect}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+                
+                <div className="image-actions">
+                  <button 
+                    className="upload-btn"
+                    onClick={handleImageUpload}
+                    disabled={!selectedImage || uploadingImage}
+                  >
+                    {uploadingImage ? (
+                      <>
+                        <div className="spinner"></div>
+                        Завантаження...
+                      </>
+                    ) : (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none">
+                          <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2"/>
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                        </svg>
+                        Зберегти
+                      </>
+                    )}
+                  </button>
+                  
+                  {profileData?.profilePicture && (
+                    <button 
+                      className="remove-btn"
+                      onClick={handleRemoveImage}
+                      disabled={uploadingImage}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <polyline points="3,6 5,6 21,6" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M19,6V20A2,2 0 0,1 17,22H7A2,2 0 0,1 5,20V6M8,6V4A2,2 0 0,1 10,2H14A2,2 0 0,1 16,4V6" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      Видалити фото
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="upload-info">
+                <p>Підтримувані формати: JPG, PNG, GIF</p>
+                <p>Максимальний розмір: 5MB</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

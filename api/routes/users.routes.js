@@ -3,6 +3,7 @@ const router = express.Router();
 
 const verifyToken = require("../verifyToken");
 const adminAuth = require('../middleware/adminAuth');
+const { uploadImages } = require('../config/cloudinary');
 
 const {
   updateUser,
@@ -18,7 +19,9 @@ const {
   getUserStats,
   createUser,
   toggleUserStatus,
-  toggleAdminRole
+  toggleAdminRole,
+  updateProfileImage,
+  removeProfileImage
 } = require("./user.controller");
 
 // Маршрути для користувачів
@@ -26,6 +29,10 @@ router.get("/profile", verifyToken, getUserProfile);
 router.put("/:id", verifyToken, updateUser);
 router.delete("/:id", verifyToken, deleteUser);
 router.get("/find/:id", getUser);
+
+// Маршрути для роботи з фото профілю
+router.post("/:id/profile-image", verifyToken, uploadImages.single('profileImage'), updateProfileImage);
+router.delete("/:id/profile-image", verifyToken, removeProfileImage);
 
 // Маршрути для роботи з улюбленими фільмами
 router.post("/favorites", verifyToken, addToFavorites);

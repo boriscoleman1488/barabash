@@ -87,6 +87,10 @@
     gap: 40px;
   }
   
+  .user-avatar-section {
+    position: relative;
+  }
+  
   .user-avatar-large {
     width: 160px;
     height: 160px;
@@ -101,6 +105,53 @@
     color: white;
     border: 4px solid rgba(255, 255, 255, 0.3);
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .avatar-initials {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+  
+  .change-avatar-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 48px;
+    height: 48px;
+    background: #e50914;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+    
+    &:hover {
+      background: #f40612;
+      transform: scale(1.1);
+    }
   }
   
   .user-info {
@@ -825,6 +876,205 @@
   }
 }
 
+/* Image Upload Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.image-upload-modal {
+  background: rgba(26, 26, 46, 0.95);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .close-modal-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      &:hover {
+        color: #e50914;
+        background: rgba(229, 9, 20, 0.1);
+      }
+    }
+  }
+  
+  .modal-content {
+    padding: 24px;
+  }
+  
+  .image-preview-container {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    
+    .image-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      span {
+        font-size: 64px;
+        font-weight: bold;
+        color: white;
+      }
+    }
+  }
+  
+  .upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    
+    .file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+    
+    .image-actions {
+      display: flex;
+      gap: 12px;
+      
+      .upload-btn,
+      .remove-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        
+        svg {
+          width: 20px;
+          height: 20px;
+        }
+        
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+      }
+      
+      .upload-btn {
+        background: #4caf50;
+        color: white;
+        
+        &:hover:not(:disabled) {
+          background: #43a047;
+        }
+      }
+      
+      .remove-btn {
+        background: #f44336;
+        color: white;
+        
+        &:hover:not(:disabled) {
+          background: #e53935;
+        }
+      }
+    }
+  }
+  
+  .upload-info {
+    text-align: center;
+    
+    p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -861,6 +1111,16 @@
       width: 120px;
       height: 120px;
       font-size: 48px;
+    }
+    
+    .change-avatar-btn {
+      width: 40px;
+      height: 40px;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
     }
     
     .user-info {
@@ -930,6 +1190,19 @@
     
     .payment-amount {
       align-self: flex-end;
+    }
+  }
+  
+  .image-upload-modal {
+    max-width: 100%;
+    
+    .image-preview-container {
+      width: 160px;
+      height: 160px;
+    }
+    
+    .upload-controls .image-actions {
+      flex-direction: column;
     }
   }
 }

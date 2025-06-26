@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Movie = require('../models/Movie');
 const Payment = require('../models/Payment');
 const CryptoJS = require("crypto-js");
+const { cloudinary, deleteFromCloudinary, getPublicIdFromUrl } = require('../config/cloudinary');
 
 const updateUser = async (req, res) => {
   const { id } = req.params;
@@ -36,6 +37,130 @@ const updateUser = async (req, res) => {
     res.status(403).json({
       success: false,
       message: "Ви можете оновлювати тільки свій акаунт!",
+    });
+  }
+};
+
+const updateProfileImage = async (req, res) => {
+  const { id } = req.params;
+  
+  if (req.user.id !== id && !req.user.isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: "Ви можете оновлювати тільки своє фото профілю!"
+    });
+  }
+  
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Файл зображення не надано"
+      });
+    }
+    
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Користувач не знайдений"
+      });
+    }
+    
+    // Видаляємо старе зображення, якщо воно є
+    if (user.profilePicture) {
+      const publicId = getPublicIdFromUrl(user.profilePicture);
+      if (publicId) {
+        try {
+          await deleteFromCloudinary(publicId);
+        } catch (error) {
+          console.error('Error deleting old profile image:', error);
+        }
+      }
+    }
+    
+    // Оновлюємо користувача з новим URL зображення
+    user.profilePicture = req.file.path;
+    await user.save();
+    
+    res.status(200).json({
+      success: true,
+      message: "Фото профілю успішно оновлено",
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Update profile image error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Помилка оновлення фото профілю",
+      errorMessage: error.message
+    });
+  }
+};
+
+const removeProfileImage = async (req, res) => {
+  const { id } = req.params;
+  
+  if (req.user.id !== id && !req.user.isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: "Ви можете видаляти тільки своє фото профілю!"
+    });
+  }
+  
+  try {
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Користувач не знайдений"
+      });
+    }
+    
+    // Видаляємо зображення, якщо воно є
+    if (user.profilePicture) {
+      const publicId = getPublicIdFromUrl(user.profilePicture);
+      if (publicId) {
+        try {
+          await deleteFromCloudinary(publicId);
+        } catch (error) {
+          console.error('Error deleting profile image:', error);
+        }
+      }
+      
+      // Очищаємо поле profilePicture
+      user.profilePicture = "";
+      await user.save();
+      
+      res.status(200).json({
+        success: true,
+        message: "Фото профілю успішно видалено",
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          profilePicture: ""
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "У користувача немає фото профілю"
+      });
+    }
+  } catch (error) {
+    console.error('Remove profile image error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Помилка видалення фото профілю",
+      errorMessage: error.message
     });
   }
 };
@@ -587,5 +712,7 @@ module.exports = {
   getUserStats,
   createUser,
   toggleUserStatus,
-  toggleAdminRole
+  toggleAdminRole,
+  updateProfileImage,
+  removeProfileImage
 };
