@@ -1,14 +1,14 @@
 .genres-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .genres-header {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 16px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .header-content {
@@ -17,19 +17,20 @@
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 24px;
 }
 
 .logo-section {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .logo-icon {
-  width: 48px;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  background: #2196f3;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,76 +38,76 @@
 }
 
 .genres-header h1 {
-  color: white;
+  color: #333;
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 20px;
   font-weight: 600;
 }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: #2196f3;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .back-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background: #1976d2;
 }
 
 .genres-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 24px;
 }
 
 .genres-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  margin-bottom: 20px;
+  gap: 16px;
 }
 
 .search-input {
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
-  width: 300px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 250px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2196f3;
 }
 
 .create-genre-btn {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: #4caf50;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .create-genre-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+  background: #45a049;
 }
 
 .genres-table {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
+  background: white;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
 }
 
 .genres-table table {
@@ -115,35 +116,29 @@
 }
 
 .genres-table th {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  padding: 1rem;
+  background: #f5f5f5;
+  color: #333;
+  padding: 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .genres-table td {
-  padding: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
-}
-
-.genres-table tr:hover {
-  background: rgba(102, 126, 234, 0.05);
+  font-size: 14px;
 }
 
 .genre-name {
   font-weight: 600;
   color: #333;
-  font-size: 1rem;
 }
 
 .genre-description {
   color: #666;
-  font-size: 0.9rem;
   max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,199 +147,171 @@
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: 6px;
 }
 
 .action-btn {
   background: none;
   border: none;
-  padding: 0.5rem;
-  border-radius: 6px;
+  padding: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 1.2rem;
-  transition: all 0.3s ease;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
 }
 
 .action-btn.edit {
-  background: rgba(255, 193, 7, 0.1);
-  color: #ffc107;
-}
-
-.action-btn.edit:hover {
-  background: rgba(255, 193, 7, 0.2);
-  transform: scale(1.1);
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
 .action-btn.delete {
-  background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-}
-
-.action-btn.delete:hover {
-  background: rgba(220, 53, 69, 0.2);
-  transform: scale(1.1);
+  background: #ffebee;
+  color: #c62828;
 }
 
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .pagination-btn {
-  background: rgba(255, 255, 255, 0.9);
-  color: #667eea;
+  background: #2196f3;
+  color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: white;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background: #1976d2;
 }
 
 .pagination-btn:disabled {
-  opacity: 0.5;
+  background: #ccc;
   cursor: not-allowed;
 }
 
 .pagination-info {
-  color: white;
+  color: #333;
   font-weight: 500;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
+  font-size: 14px;
 }
 
 .loading, .error {
   text-align: center;
-  padding: 3rem;
-  color: white;
-  font-size: 1.2rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
+  padding: 40px;
+  color: #333;
+  font-size: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
 }
 
 .error {
-  background: rgba(220, 53, 69, 0.2);
-  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #c62828;
+  background: #ffebee;
+  border-color: #ffcdd2;
 }
 
-/* Модальні вікна */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(5px);
 }
 
 .modal {
   background: white;
-  border-radius: 16px;
+  border-radius: 8px;
   width: 90%;
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-50px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border-radius: 16px 16px 0 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f5f5f5;
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 18px;
   font-weight: 600;
+  color: #333;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: white;
-  font-size: 1.5rem;
+  color: #666;
+  font-size: 20px;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 4px;
-  transition: background 0.3s ease;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: #eee;
 }
 
 .modal-form {
-  padding: 1.5rem;
+  padding: 20px;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 16px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  margin-bottom: 6px;
+  font-weight: 500;
   color: #333;
+  font-size: 14px;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e1e5e9;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
   box-sizing: border-box;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #2196f3;
 }
 
 .form-group textarea {
@@ -354,47 +321,44 @@
 
 .modal-actions {
   display: flex;
-  gap: 1rem;
+  gap: 10px;
   justify-content: flex-end;
-  margin-top: 2rem;
+  margin-top: 20px;
 }
 
 .cancel-btn {
-  background: #6c757d;
-  color: white;
+  background: #f5f5f5;
+  color: #333;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .cancel-btn:hover {
-  background: #5a6268;
-  transform: translateY(-1px);
+  background: #eee;
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: #4caf50;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  background: #45a049;
 }
 
 @media (max-width: 768px) {
   .genres-content {
-    padding: 1rem;
+    padding: 16px;
   }
   
   .genres-controls {
@@ -412,6 +376,6 @@
   
   .modal {
     width: 95%;
-    margin: 1rem;
+    margin: 20px;
   }
 }
