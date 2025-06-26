@@ -43,6 +43,54 @@ export default function Movies() {
     videoUrl: null
   });
 
+  // Список мов з українськими назвами та правильними кодами для БД
+  const languages = [
+    { code: "uk", name: "Українська" },
+    { code: "en", name: "Англійська" },
+    { code: "ru", name: "Російська" },
+    { code: "de", name: "Німецька" },
+    { code: "fr", name: "Французька" },
+    { code: "es", name: "Іспанська" },
+    { code: "it", name: "Італійська" },
+    { code: "pt", name: "Португальська" },
+    { code: "pl", name: "Польська" },
+    { code: "cs", name: "Чеська" },
+    { code: "sk", name: "Словацька" },
+    { code: "hu", name: "Угорська" },
+    { code: "ro", name: "Румунська" },
+    { code: "bg", name: "Болгарська" },
+    { code: "hr", name: "Хорватська" },
+    { code: "sr", name: "Сербська" },
+    { code: "sl", name: "Словенська" },
+    { code: "lt", name: "Литовська" },
+    { code: "lv", name: "Латвійська" },
+    { code: "et", name: "Естонська" },
+    { code: "fi", name: "Фінська" },
+    { code: "sv", name: "Шведська" },
+    { code: "no", name: "Норвезька" },
+    { code: "da", name: "Данська" },
+    { code: "nl", name: "Нідерландська" },
+    { code: "tr", name: "Турецька" },
+    { code: "ar", name: "Арабська" },
+    { code: "he", name: "Іврит" },
+    { code: "hi", name: "Хінді" },
+    { code: "zh", name: "Китайська" },
+    { code: "ja", name: "Японська" },
+    { code: "ko", name: "Корейська" },
+    { code: "th", name: "Тайська" },
+    { code: "vi", name: "В'єтнамська" },
+    { code: "id", name: "Індонезійська" },
+    { code: "ms", name: "Малайська" },
+    { code: "tl", name: "Філіппінська" },
+    { code: "other", name: "Інша" }
+  ];
+
+  // Функція для отримання назви мови за кодом
+  const getLanguageName = (code) => {
+    const language = languages.find(lang => lang.code === code);
+    return language ? language.name : code;
+  };
+
   const fetchMovies = async (page = 1) => {
     try {
       setLoading(true);
@@ -403,6 +451,7 @@ export default function Movies() {
                     <th>Рік</th>
                     <th>Тривалість</th>
                     <th>Жанри</th>
+                    <th>Мова</th>
                     <th>Тип</th>
                     <th>Ціна</th>
                     <th>Дата створення</th>
@@ -446,6 +495,11 @@ export default function Movies() {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td>
+                        <span className="badge badge-secondary" style={{ fontSize: '10px' }}>
+                          {getLanguageName(movie.language)}
+                        </span>
                       </td>
                       <td>
                         <span className={`badge ${movie.type === 'movie' ? 'badge-info' : 'badge-warning'}`}>
@@ -675,12 +729,18 @@ export default function Movies() {
                   
                   <div className="form-group">
                     <label className="form-label">Мова</label>
-                    <input
-                      type="text"
+                    <select
                       value={newMovie.language}
                       onChange={(e) => setNewMovie({...newMovie, language: e.target.value})}
-                      className="form-input"
-                    />
+                      className="form-select"
+                    >
+                      <option value="">Оберіть мову</option>
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 
@@ -1020,12 +1080,18 @@ export default function Movies() {
                   
                   <div className="form-group">
                     <label className="form-label">Мова</label>
-                    <input
-                      type="text"
+                    <select
                       value={editingMovie.language || ""}
                       onChange={(e) => setEditingMovie({...editingMovie, language: e.target.value})}
-                      className="form-input"
-                    />
+                      className="form-select"
+                    >
+                      <option value="">Оберіть мову</option>
+                      {languages.map((lang) => (
+                        <option key={lang.code} value={lang.code}>
+                          {lang.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 
