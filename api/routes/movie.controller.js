@@ -83,49 +83,68 @@ const createMovie = async (req, res) => {
       movieData.rating = parseFloat(movieData.rating) || 0;
     }
 
-    // Обробка жанрів - перетворюємо назви в ObjectId
+    // Обробка жанрів - перетворюємо ID в ObjectId
     if (movieData.genres) {
-      let genreNames = [];
+      let genreIds = [];
       if (typeof movieData.genres === 'string') {
         try {
-          genreNames = JSON.parse(movieData.genres);
+          genreIds = JSON.parse(movieData.genres);
         } catch {
-          genreNames = movieData.genres.split(',').map(g => g.trim());
+          genreIds = movieData.genres.split(',').map(g => g.trim());
         }
       } else if (Array.isArray(movieData.genres)) {
-        genreNames = movieData.genres;
+        genreIds = movieData.genres;
       }
 
-      // Знаходимо ObjectId жанрів за їх назвами
-      const genreObjects = await Genre.find({ name: { $in: genreNames } });
+      // Знаходимо жанри за їх ID
+      const genreObjects = await Genre.find({ _id: { $in: genreIds } });
       movieData.genres = genreObjects.map(genre => genre._id);
       
       console.log('Знайдені жанри:', genreObjects.map(g => ({ name: g.name, id: g._id })));
     }
 
-    // Обробка категорій - перетворюємо назви в ObjectId
+    // Обробка категорій - перетворюємо ID в ObjectId
     if (movieData.categories) {
-      let categoryNames = [];
+      let categoryIds = [];
       if (typeof movieData.categories === 'string') {
         try {
-          categoryNames = JSON.parse(movieData.categories);
+          categoryIds = JSON.parse(movieData.categories);
         } catch {
-          categoryNames = movieData.categories.split(',').map(c => c.trim());
+          categoryIds = movieData.categories.split(',').map(c => c.trim());
         }
       } else if (Array.isArray(movieData.categories)) {
-        categoryNames = movieData.categories;
+        categoryIds = movieData.categories;
       }
 
-      // Знаходимо ObjectId категорій за їх назвами
-      const categoryObjects = await Category.find({ name: { $in: categoryNames } });
+      // Знаходимо категорії за їх ID
+      const categoryObjects = await Category.find({ _id: { $in: categoryIds } });
       movieData.categories = categoryObjects.map(category => category._id);
       
       console.log('Знайдені категорії:', categoryObjects.map(c => ({ name: c.name, id: c._id })));
     }
 
-    // Обробка акторів
-    if (movieData.cast && typeof movieData.cast === 'string') {
-      movieData.cast = movieData.cast.split(',').map(c => c.trim());
+    // Виправлення для cast - правильна обробка масиву
+    if (movieData.cast) {
+      if (typeof movieData.cast === 'string') {
+        try {
+          movieData.cast = JSON.parse(movieData.cast);
+        } catch {
+          movieData.cast = movieData.cast.split(',').map(c => c.trim());
+        }
+      }
+      // Якщо cast вже масив, але містить JSON-рядки, розпарсимо їх
+      if (Array.isArray(movieData.cast)) {
+        movieData.cast = movieData.cast.map(actor => {
+          if (typeof actor === 'string' && actor.startsWith('[')) {
+            try {
+              return JSON.parse(actor);
+            } catch {
+              return actor;
+            }
+          }
+          return actor;
+        }).flat(); // flat() для випрямлення вкладених масивів
+      }
     }
 
     // Обробка сезонів для серіалів
