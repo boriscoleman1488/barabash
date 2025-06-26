@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../authContext/AuthContext';
 import Navbar from '../../components/navbar/Navbar';
+import { Link } from 'react-router-dom';
 import { userAPI } from '../../api/userAPI';
 import { paymentAPI } from '../../api/paymentAPI';
 import './Profile.scss';
@@ -495,24 +496,32 @@ const Profile = () => {
                       <div className="movie-poster">
                         <img src={movie.posterImage} alt={movie.title} />
                         <div className="movie-overlay">
-                          <button className="play-btn">
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <polygon points="5,3 19,12 5,21" fill="currentColor"/>
-                            </svg>
-                          </button>
-                          <button 
-                            className="remove-btn"
-                            onClick={() => removeFromFavorites(movie._id)}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
-                              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
-                            </svg>
-                          </button>
+                          <div className="overlay-buttons">
+                            <Link to={`/movie/${movie._id}`} className="info-btn">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                              Деталі
+                            </Link>
+                            <button 
+                              className="remove-btn"
+                              onClick={() => removeFromFavorites(movie._id)}
+                            >
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                              Видалити
+                            </button>
+                          </div>
                         </div>
                       </div>
                       <div className="movie-info">
-                        <h4>{movie.title}</h4>
+                        <h4>
+                          <Link to={`/movie/${movie._id}`}>{movie.title}</Link>
+                        </h4>
                         <span className="movie-type">
                           {movie.type === 'movie' ? 'Фільм' : 'Серіал'}
                         </span>
@@ -546,11 +555,22 @@ const Profile = () => {
                       <div className="movie-poster">
                         <img src={movie.posterImage} alt={movie.title} />
                         <div className="movie-overlay">
-                          <button className="play-btn">
-                            <svg viewBox="0 0 24 24" fill="none">
-                              <polygon points="5,3 19,12 5,21" fill="currentColor"/>
-                            </svg>
-                          </button>
+                          <div className="overlay-buttons">
+                            <Link to={`/movie/${movie._id}`} className="info-btn">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" strokeWidth="2"/>
+                                <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="2"/>
+                              </svg>
+                              Деталі
+                            </Link>
+                            <Link to="/watch" state={{ movie }} className="play-btn">
+                              <svg viewBox="0 0 24 24" fill="none">
+                                <polygon points="5,3 19,12 5,21" fill="currentColor"/>
+                              </svg>
+                              Дивитись
+                            </Link>
+                          </div>
                         </div>
                         <div className="purchased-badge">
                           <svg viewBox="0 0 24 24" fill="none">
@@ -560,7 +580,9 @@ const Profile = () => {
                         </div>
                       </div>
                       <div className="movie-info">
-                        <h4>{movie.title}</h4>
+                        <h4>
+                          <Link to={`/movie/${movie._id}`}>{movie.title}</Link>
+                        </h4>
                         <span className="movie-type">
                           {movie.type === 'movie' ? 'Фільм' : 'Серіал'}
                         </span>

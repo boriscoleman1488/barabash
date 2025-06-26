@@ -547,44 +547,62 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 16px;
         opacity: 0;
         transition: opacity 0.3s ease;
         
-        .play-btn,
-        .remove-btn {
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          border: none;
-          cursor: pointer;
+        .overlay-buttons {
           display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.3s ease;
+          flex-direction: column;
+          gap: 12px;
+          width: 80%;
           
-          svg {
-            width: 20px;
-            height: 20px;
+          .info-btn,
+          .play-btn,
+          .remove-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            
+            svg {
+              width: 16px;
+              height: 16px;
+            }
           }
-        }
-        
-        .play-btn {
-          background: #e50914;
-          color: white;
           
-          &:hover {
-            background: #f40612;
-            transform: scale(1.1);
+          .info-btn {
+            background: rgba(33, 150, 243, 0.8);
+            color: white;
+            
+            &:hover {
+              background: #2196f3;
+            }
           }
-        }
-        
-        .remove-btn {
-          background: rgba(255, 255, 255, 0.2);
-          color: white;
           
-          &:hover {
-            background: rgba(244, 67, 54, 0.8);
+          .play-btn {
+            background: #e50914;
+            color: white;
+            
+            &:hover {
+              background: #f40612;
+            }
+          }
+          
+          .remove-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            
+            &:hover {
+              background: rgba(244, 67, 54, 0.8);
+            }
           }
         }
       }
@@ -628,6 +646,16 @@
         font-weight: 600;
         color: white;
         line-height: 1.3;
+        
+        a {
+          color: white;
+          text-decoration: none;
+          transition: color 0.3s ease;
+          
+          &:hover {
+            color: #e50914;
+          }
+        }
       }
       
       .movie-type {
