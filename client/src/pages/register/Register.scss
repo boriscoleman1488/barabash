@@ -1,185 +1,184 @@
-.register {
-  width: 100vw;
-  height: 100vh;
-  background: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.4) 0%,
-      rgba(0, 0, 0, 0.8) 100%
-    ),
-    url("https://assets.nflxext.com/ffe/siteui/vlv3/61e79073-50cf-4f7b-9a23-73290e6f7dca/29be149f-660f-424f-9882-2693f3436511/PK-en-20230410-popsignuptwoweeks-perspective_alpha_website_large.jpg");
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  display: flex;
-  flex-direction: column;
+@import '../login/Login.scss';
 
-  .top {
-    .wrapper {
-      padding: 20px 50px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .logo {
-        height: 40px;
-      }
-
-      .loginButton {
-        background-color: #e50914;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-weight: 500;
-        transition: background-color 0.3s ease;
-
-        &:hover {
-          background-color: #f40612;
-        }
-      }
-    }
-  }
-
-  .container {
-    flex: 1;
+.progress-bar {
+  margin-bottom: 32px;
+  
+  .progress-steps {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-
-    .formContainer {
-      background-color: rgba(0, 0, 0, 0.85);
-      padding: 40px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 450px;
-      color: white;
-
-      h1 {
-        font-size: 32px;
-        margin-bottom: 8px;
-        font-weight: 700;
+    gap: 16px;
+    
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.5;
+      transition: all 0.3s ease;
+      
+      &.active {
+        opacity: 1;
       }
-
-      p {
-        color: #b3b3b3;
-        margin-bottom: 30px;
-        font-size: 16px;
-      }
-
-      .success-message {
-        background-color: #4caf50;
-        color: white;
-        padding: 12px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-
-      .error-message {
-        background-color: #f44336;
-        color: white;
-        padding: 12px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        text-align: center;
-      }
-
-      .registerForm {
+      
+      .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e5e7eb;
+        color: #6b7280;
         display: flex;
-        flex-direction: column;
-        gap: 16px;
-
-        .inputGroup {
-          display: flex;
-          gap: 16px;
-
-          input {
-            flex: 1;
-          }
-        }
-
-        input {
-          background-color: #333;
-          border: none;
-          border-radius: 4px;
-          color: white;
-          font-size: 16px;
-          height: 50px;
-          padding: 0 16px;
-          transition: background-color 0.3s ease;
-
-          &::placeholder {
-            color: #8c8c8c;
-          }
-
-          &:focus {
-            outline: none;
-            background-color: #454545;
-          }
-
-          &:invalid {
-            border: 1px solid #e87c03;
-          }
-        }
-
-        .registerButton {
-          background-color: #e50914;
-          border: none;
-          border-radius: 4px;
-          color: white;
-          cursor: pointer;
-          font-size: 16px;
-          font-weight: 500;
-          height: 50px;
-          margin-top: 24px;
-          transition: background-color 0.3s ease;
-
-          &:hover:not(:disabled) {
-            background-color: #f40612;
-          }
-
-          &:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-          }
-        }
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
       }
-
-      .loginLink {
-        margin-top: 24px;
-        color: #b3b3b3;
+      
+      &.active .step-number {
+        background: linear-gradient(135deg, #e50914, #f40612);
+        color: white;
+        box-shadow: 0 4px 16px rgba(229, 9, 20, 0.3);
+      }
+      
+      span {
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
         text-align: center;
-
-        a {
-          color: white;
-          text-decoration: none;
-          font-weight: 500;
-
-          &:hover {
-            text-decoration: underline;
-          }
-        }
       }
+      
+      &.active span {
+        color: #1f2937;
+      }
+    }
+    
+    .progress-line {
+      width: 60px;
+      height: 2px;
+      background: #e5e7eb;
+      border-radius: 1px;
     }
   }
+}
 
-  @media (max-width: 768px) {
-    .top .wrapper {
-      padding: 20px 20px;
+.form-step {
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
     }
-
-    .container {
-      padding: 20px;
-
-      .formContainer {
-        padding: 30px 20px;
-
-        .registerForm .inputGroup {
-          flex-direction: column;
-          gap: 16px;
-        }
+  }
+  
+  .input-hint {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  
+  .input-error {
+    font-size: 12px;
+    color: #dc2626;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .password-strength {
+    margin-top: 8px;
+    
+    .strength-bar {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+      
+      .strength-fill {
+        height: 100%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
       }
+    }
+    
+    span {
+      font-size: 12px;
+      font-weight: 500;
+    }
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    
+    .back-btn {
+      flex: 1;
+      background: white;
+      color: #6b7280;
+      border: 2px solid #e5e7eb;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      &:hover {
+        border-color: #d1d5db;
+        background: #f9fafb;
+      }
+    }
+    
+    .submit-btn {
+      flex: 2;
+    }
+  }
+}
+
+.success-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  color: #16a34a;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #86efac;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  
+  span {
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-actions {
+    flex-direction: column;
+    
+    .back-btn,
+    .submit-btn {
+      flex: none;
     }
   }
 }

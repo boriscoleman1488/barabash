@@ -13,6 +13,8 @@ const Profile = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState({});
 
   const API_BASE_URL = "http://localhost:5000/api";
 
@@ -37,6 +39,12 @@ const Profile = () => {
       
       if (response.data.success) {
         setProfileData(response.data.user);
+        setEditData({
+          firstName: response.data.user.firstName || '',
+          lastName: response.data.user.lastName || '',
+          username: response.data.user.username || '',
+          email: response.data.user.email || ''
+        });
       }
     } catch (err) {
       console.error('Error fetching profile:', err);
@@ -102,6 +110,21 @@ const Profile = () => {
     }
   };
 
+  const handleEditProfile = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await apiClient.put(`/users/${profileData._id}`, editData);
+      if (response.data.success) {
+        setProfileData(response.data.user);
+        setEditMode(false);
+        alert('Профіль успішно оновлено!');
+      }
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      alert('Помилка оновлення профілю');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('uk-UA');
   };
@@ -132,7 +155,10 @@ const Profile = () => {
     return (
       <div className="profile-page">
         <Navbar />
-        <div className="loading">Завантаження профілю...</div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Завантаження профілю...</p>
+        </div>
       </div>
     );
   }
@@ -141,7 +167,14 @@ const Profile = () => {
     return (
       <div className="profile-page">
         <Navbar />
-        <div className="error">{error}</div>
+        <div className="error-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+            <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" strokeWidth="2"/>
+            <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" strokeWidth="2"/>
+          </svg>
+          <p>{error}</p>
+        </div>
       </div>
     );
   }
@@ -151,132 +184,231 @@ const Profile = () => {
       <Navbar />
       
       <div className="profile-container">
-        <div className="profile-header">
-          <div className="user-avatar">
-            {(profileData?.firstName?.[0] || profileData?.username?.[0] || 'U').toUpperCase()}
-          </div>
-          <div className="user-info">
-            <h1>{profileData?.firstName} {profileData?.lastName}</h1>
-            <p className="username">@{profileData?.username}</p>
-            <p className="email">{profileData?.email}</p>
-            <div className="user-stats">
-              <div className="stat">
-                <span className="stat-number">{profileData?.stats?.totalPurchases || 0}</span>
-                <span className="stat-label">Придбано фільмів</span>
+        <div className="profile-hero">
+          <div className="hero-background"></div>
+          <div className="hero-content">
+            <div className="user-avatar-large">
+              {(profileData?.firstName?.[0] || profileData?.username?.[0] || 'U').toUpperCase()}
+            </div>
+            <div className="user-info">
+              <h1>{profileData?.firstName} {profileData?.lastName}</h1>
+              <p className="username">@{profileData?.username}</p>
+              <p className="email">{profileData?.email}</p>
+              <div className="user-badges">
+                <span className="badge premium">Premium User</span>
+                <span className="badge member">
+                  Учасник з {formatDate(profileData?.createdAt)}
+                </span>
               </div>
-              <div className="stat">
-                <span className="stat-number">{formatPrice(profileData?.stats?.totalSpent || 0)}</span>
-                <span className="stat-label">Витрачено</span>
+            </div>
+            <div className="hero-stats">
+              <div className="stat-card">
+                <div className="stat-number">{profileData?.stats?.totalPurchases || 0}</div>
+                <div className="stat-label">Придбано</div>
               </div>
-              <div className="stat">
-                <span className="stat-number">{profileData?.stats?.favoriteMoviesCount || 0}</span>
-                <span className="stat-label">Улюблених</span>
+              <div className="stat-card">
+                <div className="stat-number">{formatPrice(profileData?.stats?.totalSpent || 0)}</div>
+                <div className="stat-label">Витрачено</div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-number">{profileData?.stats?.favoriteMoviesCount || 0}</div>
+                <div className="stat-label">Улюблених</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="profile-tabs">
-          <button 
-            className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => handleTabChange('overview')}
-          >
-            Огляд
-          </button>
-          <button 
-            className={`tab ${activeTab === 'favorites' ? 'active' : ''}`}
-            onClick={() => handleTabChange('favorites')}
-          >
-            Улюблені ({profileData?.stats?.favoriteMoviesCount || 0})
-          </button>
-          <button 
-            className={`tab ${activeTab === 'purchased' ? 'active' : ''}`}
-            onClick={() => handleTabChange('purchased')}
-          >
-            Придбані ({profileData?.stats?.purchasedMoviesCount || 0})
-          </button>
-          <button 
-            className={`tab ${activeTab === 'payments' ? 'active' : ''}`}
-            onClick={() => handleTabChange('payments')}
-          >
-            Оплати
-          </button>
+        <div className="profile-navigation">
+          <div className="nav-tabs">
+            <button 
+              className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => handleTabChange('overview')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 9L12 2L21 9V20A2 2 0 0 1 19 22H5A2 2 0 0 1 3 20V9Z" stroke="currentColor" strokeWidth="2"/>
+                <polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Огляд
+            </button>
+            <button 
+              className={`nav-tab ${activeTab === 'favorites' ? 'active' : ''}`}
+              onClick={() => handleTabChange('favorites')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20.84 4.61A5.5 5.5 0 0 0 7.5 7.5L12 12L16.5 7.5A5.5 5.5 0 0 0 20.84 4.61Z" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Улюблені
+              <span className="tab-count">{profileData?.stats?.favoriteMoviesCount || 0}</span>
+            </button>
+            <button 
+              className={`nav-tab ${activeTab === 'purchased' ? 'active' : ''}`}
+              onClick={() => handleTabChange('purchased')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M2 3H22L20 15H4L2 3Z" stroke="currentColor" strokeWidth="2"/>
+                <path d="M2 3L4 15L6 21H18L20 15" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Придбані
+              <span className="tab-count">{profileData?.stats?.purchasedMoviesCount || 0}</span>
+            </button>
+            <button 
+              className={`nav-tab ${activeTab === 'payments' ? 'active' : ''}`}
+              onClick={() => handleTabChange('payments')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+                <line x1="1" y1="10" x2="23" y2="10" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Оплати
+            </button>
+            <button 
+              className={`nav-tab ${activeTab === 'settings' ? 'active' : ''}`}
+              onClick={() => handleTabChange('settings')}
+            >
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+                <path d="M19.4 15A1.65 1.65 0 0 0 21 13.09A1.65 1.65 0 0 0 19.4 9A1.65 1.65 0 0 0 21 10.91A1.65 1.65 0 0 0 19.4 15Z" stroke="currentColor" strokeWidth="2"/>
+              </svg>
+              Налаштування
+            </button>
+          </div>
         </div>
 
         <div className="profile-content">
           {activeTab === 'overview' && (
-            <div className="overview-tab">
-              <div className="info-cards">
-                <div className="info-card">
-                  <h3>Особиста інформація</h3>
-                  <div className="info-item">
-                    <span className="label">Ім'я:</span>
-                    <span className="value">{profileData?.firstName || 'Не вказано'}</span>
+            <div className="overview-content">
+              <div className="content-grid">
+                <div className="info-section">
+                  <div className="section-header">
+                    <h3>Особиста інформація</h3>
+                    <button 
+                      className="edit-btn"
+                      onClick={() => setEditMode(!editMode)}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M11 4H4A2 2 0 0 0 2 6V20A2 2 0 0 0 4 22H18A2 2 0 0 0 20 20V13" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M18.5 2.5A2.12 2.12 0 0 1 21 5L12 14L8 15L9 11L18.5 2.5Z" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      {editMode ? 'Скасувати' : 'Редагувати'}
+                    </button>
                   </div>
-                  <div className="info-item">
-                    <span className="label">Прізвище:</span>
-                    <span className="value">{profileData?.lastName || 'Не вказано'}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="label">Email:</span>
-                    <span className="value">{profileData?.email}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="label">Дата реєстрації:</span>
-                    <span className="value">{formatDate(profileData?.createdAt)}</span>
-                  </div>
+                  
+                  {editMode ? (
+                    <form onSubmit={handleEditProfile} className="edit-form">
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Ім'я</label>
+                          <input
+                            type="text"
+                            value={editData.firstName}
+                            onChange={(e) => setEditData({...editData, firstName: e.target.value})}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Прізвище</label>
+                          <input
+                            type="text"
+                            value={editData.lastName}
+                            onChange={(e) => setEditData({...editData, lastName: e.target.value})}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>Ім'я користувача</label>
+                        <input
+                          type="text"
+                          value={editData.username}
+                          onChange={(e) => setEditData({...editData, username: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Email</label>
+                        <input
+                          type="email"
+                          value={editData.email}
+                          onChange={(e) => setEditData({...editData, email: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-actions">
+                        <button type="submit" className="save-btn">Зберегти</button>
+                        <button type="button" className="cancel-btn" onClick={() => setEditMode(false)}>
+                          Скасувати
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <span className="label">Повне ім'я</span>
+                        <span className="value">{profileData?.firstName} {profileData?.lastName}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Ім'я користувача</span>
+                        <span className="value">@{profileData?.username}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Email адреса</span>
+                        <span className="value">{profileData?.email}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="label">Дата реєстрації</span>
+                        <span className="value">{formatDate(profileData?.createdAt)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="info-card">
-                  <h3>Статистика активності</h3>
-                  <div className="info-item">
-                    <span className="label">Загальна кількість покупок:</span>
-                    <span className="value">{profileData?.stats?.totalPurchases || 0}</span>
+                <div className="activity-section">
+                  <div className="section-header">
+                    <h3>Остання активність</h3>
                   </div>
-                  <div className="info-item">
-                    <span className="label">Загальна сума витрат:</span>
-                    <span className="value">{formatPrice(profileData?.stats?.totalSpent || 0)}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="label">Улюблених фільмів:</span>
-                    <span className="value">{profileData?.stats?.favoriteMoviesCount || 0}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="label">Придбаних фільмів:</span>
-                    <span className="value">{profileData?.stats?.purchasedMoviesCount || 0}</span>
-                  </div>
+                  
+                  {profileData?.recentPayments && profileData.recentPayments.length > 0 ? (
+                    <div className="activity-list">
+                      {profileData.recentPayments.map((payment) => (
+                        <div key={payment._id} className="activity-item">
+                          <div className="activity-icon">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <path d="M2 3H22L20 15H4L2 3Z" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </div>
+                          <div className="activity-info">
+                            <h4>Придбано "{payment.movieId?.title}"</h4>
+                            <p>{formatDate(payment.createdAt)}</p>
+                            <span className="price">{formatPrice(payment.amount)}</span>
+                          </div>
+                          {getStatusBadge(payment.status)}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="empty-state">
+                      <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                        <path d="M8 14S9.5 16 12 16S16 14 16 14" stroke="currentColor" strokeWidth="2"/>
+                        <line x1="9" y1="9" x2="9.01" y2="9" stroke="currentColor" strokeWidth="2"/>
+                        <line x1="15" y1="9" x2="15.01" y2="9" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                      <p>Поки що немає активності</p>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {profileData?.recentPayments && profileData.recentPayments.length > 0 && (
-                <div className="recent-activity">
-                  <h3>Останні покупки</h3>
-                  <div className="activity-list">
-                    {profileData.recentPayments.map((payment) => (
-                      <div key={payment._id} className="activity-item">
-                        <img 
-                          src={payment.movieId?.posterImage} 
-                          alt={payment.movieId?.title}
-                          className="movie-poster"
-                        />
-                        <div className="activity-info">
-                          <h4>{payment.movieId?.title}</h4>
-                          <p>{formatDate(payment.createdAt)}</p>
-                          <span className="price">{formatPrice(payment.amount)}</span>
-                        </div>
-                        {getStatusBadge(payment.status)}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
           {activeTab === 'favorites' && (
-            <div className="favorites-tab">
+            <div className="favorites-content">
+              <div className="section-header">
+                <h3>Улюблені фільми</h3>
+                <span className="count">{favoriteMovies.length} фільмів</span>
+              </div>
+              
               {favoriteMovies.length === 0 ? (
                 <div className="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M20.84 4.61A5.5 5.5 0 0 0 7.5 7.5L12 12L16.5 7.5A5.5 5.5 0 0 0 20.84 4.61Z" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
                   <h3>Немає улюблених фільмів</h3>
                   <p>Додайте фільми до улюблених, щоб вони з'явилися тут</p>
                 </div>
@@ -284,22 +416,30 @@ const Profile = () => {
                 <div className="movies-grid">
                   {favoriteMovies.map((movie) => (
                     <div key={movie._id} className="movie-card">
-                      <img 
-                        src={movie.posterImage} 
-                        alt={movie.title}
-                        className="movie-poster"
-                      />
+                      <div className="movie-poster">
+                        <img src={movie.posterImage} alt={movie.title} />
+                        <div className="movie-overlay">
+                          <button className="play-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <polygon points="5,3 19,12 5,21" fill="currentColor"/>
+                            </svg>
+                          </button>
+                          <button 
+                            className="remove-btn"
+                            onClick={() => removeFromFavorites(movie._id)}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2"/>
+                              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
                       <div className="movie-info">
                         <h4>{movie.title}</h4>
                         <span className="movie-type">
                           {movie.type === 'movie' ? 'Фільм' : 'Серіал'}
                         </span>
-                        <button 
-                          className="remove-btn"
-                          onClick={() => removeFromFavorites(movie._id)}
-                        >
-                          Видалити з улюблених
-                        </button>
                       </div>
                     </div>
                   ))}
@@ -309,38 +449,51 @@ const Profile = () => {
           )}
 
           {activeTab === 'purchased' && (
-            <div className="purchased-tab">
+            <div className="purchased-content">
+              <div className="section-header">
+                <h3>Придбані фільми</h3>
+                <span className="count">{purchasedMovies.length} фільмів</span>
+              </div>
+              
               {purchasedMovies.length === 0 ? (
                 <div className="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M2 3H22L20 15H4L2 3Z" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
                   <h3>Немає придбаних фільмів</h3>
                   <p>Придбайте фільми, щоб вони з'явилися тут</p>
                 </div>
               ) : (
                 <div className="movies-grid">
                   {purchasedMovies.map((movie) => (
-                    <div key={movie._id} className="movie-card">
-                      <img 
-                        src={movie.posterImage} 
-                        alt={movie.title}
-                        className="movie-poster"
-                      />
+                    <div key={movie._id} className="movie-card purchased">
+                      <div className="movie-poster">
+                        <img src={movie.posterImage} alt={movie.title} />
+                        <div className="movie-overlay">
+                          <button className="play-btn">
+                            <svg viewBox="0 0 24 24" fill="none">
+                              <polygon points="5,3 19,12 5,21" fill="currentColor"/>
+                            </svg>
+                          </button>
+                        </div>
+                        <div className="purchased-badge">
+                          <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M9 12L11 14L15 10" stroke="currentColor" strokeWidth="2"/>
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                          </svg>
+                        </div>
+                      </div>
                       <div className="movie-info">
                         <h4>{movie.title}</h4>
                         <span className="movie-type">
                           {movie.type === 'movie' ? 'Фільм' : 'Серіал'}
                         </span>
                         {movie.purchaseInfo && (
-                          <div className="purchase-info">
+                          <div className="purchase-details">
                             <p>Придбано: {formatDate(movie.purchaseInfo.purchaseDate)}</p>
                             <p>Ціна: {formatPrice(movie.purchaseInfo.price)}</p>
-                            {movie.purchaseInfo.expiryDate && (
-                              <p>Доступ до: {formatDate(movie.purchaseInfo.expiryDate)}</p>
-                            )}
                           </div>
                         )}
-                        <button className="watch-btn">
-                          Дивитися
-                        </button>
                       </div>
                     </div>
                   ))}
@@ -350,49 +503,101 @@ const Profile = () => {
           )}
 
           {activeTab === 'payments' && (
-            <div className="payments-tab">
+            <div className="payments-content">
+              <div className="section-header">
+                <h3>Історія оплат</h3>
+                <span className="count">{payments.length} транзакцій</span>
+              </div>
+              
               {payments.length === 0 ? (
                 <div className="empty-state">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" stroke="currentColor" strokeWidth="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
                   <h3>Немає оплат</h3>
                   <p>Історія ваших оплат з'явиться тут</p>
                 </div>
               ) : (
-                <div className="payments-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Фільм</th>
-                        <th>Сума</th>
-                        <th>Дата</th>
-                        <th>Статус</th>
-                        <th>Метод оплати</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {payments.map((payment) => (
-                        <tr key={payment._id}>
-                          <td>
-                            <div className="payment-movie">
-                              <img 
-                                src={payment.movieId?.posterImage} 
-                                alt={payment.movieId?.title}
-                                className="payment-poster"
-                              />
-                              <span>{payment.movieId?.title}</span>
-                            </div>
-                          </td>
-                          <td>{formatPrice(payment.amount, payment.currency)}</td>
-                          <td>{formatDate(payment.createdAt)}</td>
-                          <td>{getStatusBadge(payment.status)}</td>
-                          <td className="payment-method">
+                <div className="payments-list">
+                  {payments.map((payment) => (
+                    <div key={payment._id} className="payment-item">
+                      <div className="payment-movie">
+                        <img 
+                          src={payment.movieId?.posterImage} 
+                          alt={payment.movieId?.title}
+                        />
+                        <div className="payment-info">
+                          <h4>{payment.movieId?.title}</h4>
+                          <p>{formatDate(payment.createdAt)}</p>
+                          <span className="payment-method">
                             {payment.paymentMethod === 'card' ? 'Картка' : payment.paymentMethod}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="payment-amount">
+                        {formatPrice(payment.amount, payment.currency)}
+                      </div>
+                      {getStatusBadge(payment.status)}
+                    </div>
+                  ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="settings-content">
+              <div className="section-header">
+                <h3>Налаштування акаунту</h3>
+              </div>
+              
+              <div className="settings-grid">
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Сповіщення</h4>
+                    <p>Отримувати сповіщення про нові фільми та акції</p>
+                  </div>
+                  <label className="toggle">
+                    <input type="checkbox" defaultChecked />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Автовідтворення</h4>
+                    <p>Автоматично відтворювати трейлери при наведенні</p>
+                  </div>
+                  <label className="toggle">
+                    <input type="checkbox" defaultChecked />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                
+                <div className="setting-item">
+                  <div className="setting-info">
+                    <h4>Якість відео</h4>
+                    <p>Автоматично підбирати якість відео</p>
+                  </div>
+                  <select className="setting-select">
+                    <option>Автоматично</option>
+                    <option>720p</option>
+                    <option>1080p</option>
+                    <option>4K</option>
+                  </select>
+                </div>
+                
+                <div className="setting-item danger">
+                  <div className="setting-info">
+                    <h4>Видалити акаунт</h4>
+                    <p>Назавжди видалити ваш акаунт та всі дані</p>
+                  </div>
+                  <button className="danger-btn">
+                    Видалити
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

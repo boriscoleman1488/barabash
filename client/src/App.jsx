@@ -11,6 +11,7 @@ import Register from "./pages/register/Register";
 import Watch from "./pages/watch/Watch";
 import Login from "./pages/login/Login";
 import Profile from "./pages/profile/Profile";
+import ForgotPassword from "./pages/forgot-password/ForgotPassword";
 import { useContext } from "react";
 import { AuthContext } from "./authContext/AuthContext";
 
@@ -34,6 +35,10 @@ const App = () => {
         <Route
           path="/login"
           element={!user ? <Login /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/forgot-password"
+          element={!user ? <ForgotPassword /> : <Navigate to="/" />}
         />
         {user && (
           <>
