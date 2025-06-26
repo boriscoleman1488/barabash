@@ -6,8 +6,6 @@ import "../../styles/admin-common.css";
 
 export default function Movies() {
   const [movies, setMovies] = useState([]);
-  const [genres, setGenres] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,30 +14,29 @@ export default function Movies() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
+  const [genres, setGenres] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [posterFile, setPosterFile] = useState(null);
+  const [trailerFile, setTrailerFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [seasons, setSeasons] = useState([]);
+
   const [newMovie, setNewMovie] = useState({
     title: "",
     description: "",
-    posterImage: null,
-    trailerUrl: "",
-    videoUrl: null,
-    duration: "",
     releaseYear: new Date().getFullYear(),
+    duration: "",
     country: "",
     film_language: "",
-    ageRating: "PG",
-    genres: [],
     director: "",
     cast: "",
     type: "movie",
-    seasons: [],
-    pricing: {
-      buyPrice: 0,
-      isFree: true
-    }
+    ageRating: "PG",
+    "pricing.isFree": true,
+    "pricing.buyPrice": 0
   });
-  const [posterPreview, setPosterPreview] = useState("");
-  const [selectedGenres, setSelectedGenres] = useState([]);
-  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const fetchMovies = async (page = 1) => {
     try {
@@ -64,7 +61,7 @@ export default function Movies() {
 
   const fetchGenres = async () => {
     try {
-      const data = await genreAPI.getAll(1, 100);
+      const data = await genreAPI.getAll();
       if (data.success) {
         setGenres(data.genres || []);
       }
@@ -75,7 +72,7 @@ export default function Movies() {
 
   const fetchCategories = async () => {
     try {
-      const data = await categoryAPI.getAll(1, 100);
+      const data = await categoryAPI.getAll();
       if (data.success) {
         setCategories(data.categories || []);
       }
@@ -90,44 +87,44 @@ export default function Movies() {
     try {
       const formData = new FormData();
       
-      // Додаємо основні поля
+      // Додаємо основні дані фільму
       Object.keys(newMovie).forEach(key => {
-        if (key !== 'posterImage' && key !== 'videoUrl' && key !== 'trailerUrl' && key !== 'seasons' && key !== 'pricing') {
+        if (newMovie[key] !== undefined && newMovie[key] !== null) {
           formData.append(key, newMovie[key]);
         }
       });
       
-      // Додаємо файли
-      if (newMovie.posterImage) {
-        formData.append('posterImage', newMovie.posterImage);
+      // Додаємо жанри
+      if (selectedGenres.length > 0) {
+        formData.append('genres', JSON.stringify(selectedGenres));
       }
       
-      if (newMovie.videoUrl && newMovie.type === 'movie') {
-        formData.append('videoUrl', newMovie.videoUrl);
+      // Додаємо категорії
+      if (selectedCategories.length > 0) {
+        formData.append('categories', JSON.stringify(selectedCategories));
       }
-      
-      if (newMovie.trailerUrl) {
-        formData.append('trailerUrl', newMovie.trailerUrl);
-      }
-      
-      // Додаємо жанри та категорії
-      formData.append('genres', JSON.stringify(selectedGenres));
-      formData.append('categories', JSON.stringify(selectedCategories));
-      
-      // Додаємо ціноутворення
-      formData.append('pricing.buyPrice', newMovie.pricing.buyPrice);
-      formData.append('pricing.isFree', newMovie.pricing.isFree);
       
       // Додаємо акторів
-      if (typeof newMovie.cast === 'string') {
+      if (newMovie.cast) {
         formData.append('cast', newMovie.cast);
-      } else if (Array.isArray(newMovie.cast)) {
-        formData.append('cast', newMovie.cast.join(','));
+      }
+      
+      // Додаємо файли
+      if (posterFile) {
+        formData.append('posterImage', posterFile);
+      }
+      
+      if (trailerFile) {
+        formData.append('trailerUrl', trailerFile);
+      }
+      
+      if (videoFile) {
+        formData.append('videoUrl', videoFile);
       }
       
       // Додаємо сезони для серіалів
-      if (newMovie.type === 'series' && newMovie.seasons.length > 0) {
-        formData.append('seasons', JSON.stringify(newMovie.seasons));
+      if (newMovie.type === 'series' && seasons.length > 0) {
+        formData.append('seasons', JSON.stringify(seasons));
       }
       
       const data = await movieAPI.createWithFiles(formData);
@@ -153,47 +150,50 @@ export default function Movies() {
     try {
       const formData = new FormData();
       
-      // Додаємо основні поля
+      // Додаємо основні дані фільму
       Object.keys(editingMovie).forEach(key => {
-        if (key !== 'posterImage' && key !== 'videoUrl' && key !== 'trailerUrl' && key !== 'seasons' && key !== 'pricing' && key !== '_id') {
+        if (editingMovie[key] !== undefined && editingMovie[key] !== null && 
+            key !== 'genres' && key !== 'categories' && key !== '_id' && 
+            key !== 'createdAt' && key !== 'updatedAt' && key !== '__v') {
           formData.append(key, editingMovie[key]);
         }
       });
       
-      // Додаємо файли, тільки якщо вони були змінені
-      if (editingMovie.posterImage && typeof editingMovie.posterImage !== 'string') {
-        formData.append('posterImage', editingMovie.posterImage);
+      // Додаємо жанри
+      if (selectedGenres.length > 0) {
+        formData.append('genres', JSON.stringify(selectedGenres));
       }
       
-      if (editingMovie.videoUrl && typeof editingMovie.videoUrl !== 'string' && editingMovie.type === 'movie') {
-        formData.append('videoUrl', editingMovie.videoUrl);
+      // Додаємо категорії
+      if (selectedCategories.length > 0) {
+        formData.append('categories', JSON.stringify(selectedCategories));
       }
-      
-      if (editingMovie.trailerUrl && typeof editingMovie.trailerUrl !== 'string') {
-        formData.append('trailerUrl', editingMovie.trailerUrl);
-      }
-      
-      // Додаємо жанри та категорії
-      const genreIds = editingMovie.genres.map(g => typeof g === 'object' ? g._id : g);
-      const categoryIds = editingMovie.categories.map(c => typeof c === 'object' ? c._id : c);
-      
-      formData.append('genres', JSON.stringify(genreIds));
-      formData.append('categories', JSON.stringify(categoryIds));
-      
-      // Додаємо ціноутворення
-      formData.append('pricing.buyPrice', editingMovie.pricing.buyPrice);
-      formData.append('pricing.isFree', editingMovie.pricing.isFree);
       
       // Додаємо акторів
-      if (typeof editingMovie.cast === 'string') {
-        formData.append('cast', editingMovie.cast);
-      } else if (Array.isArray(editingMovie.cast)) {
-        formData.append('cast', editingMovie.cast.join(','));
+      if (editingMovie.cast) {
+        if (Array.isArray(editingMovie.cast)) {
+          formData.append('cast', editingMovie.cast.join(', '));
+        } else {
+          formData.append('cast', editingMovie.cast);
+        }
+      }
+      
+      // Додаємо файли
+      if (posterFile) {
+        formData.append('posterImage', posterFile);
+      }
+      
+      if (trailerFile) {
+        formData.append('trailerUrl', trailerFile);
+      }
+      
+      if (videoFile) {
+        formData.append('videoUrl', videoFile);
       }
       
       // Додаємо сезони для серіалів
-      if (editingMovie.type === 'series' && editingMovie.seasons.length > 0) {
-        formData.append('seasons', JSON.stringify(editingMovie.seasons));
+      if (editingMovie.type === 'series' && seasons.length > 0) {
+        formData.append('seasons', JSON.stringify(seasons));
       }
       
       const data = await movieAPI.updateWithFiles(editingMovie._id, formData);
@@ -201,6 +201,7 @@ export default function Movies() {
       if (data.success) {
         setShowEditModal(false);
         setEditingMovie(null);
+        resetForm();
         fetchMovies(currentPage);
         setError("");
         alert("Фільм успішно оновлено!");
@@ -257,184 +258,134 @@ export default function Movies() {
     }
   };
 
-  const handleFileChange = (e, field, setStateFunc) => {
-    const file = e.target.files[0];
-    if (file) {
-      setStateFunc(prev => ({
-        ...prev,
-        [field]: file
-      }));
-      
-      // Створюємо превью для зображення
-      if (field === 'posterImage') {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setPosterPreview(e.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-  };
-
-  const handleTypeChange = (e, setStateFunc) => {
-    const type = e.target.value;
-    setStateFunc(prev => ({
-      ...prev,
-      type,
-      // Якщо тип змінюється на фільм, очищаємо сезони
-      ...(type === 'movie' ? { seasons: [] } : {})
-    }));
-  };
-
-  const handlePricingChange = (e, field, setStateFunc) => {
-    const value = field === 'isFree' ? e.target.checked : parseFloat(e.target.value);
-    setStateFunc(prev => ({
-      ...prev,
-      pricing: {
-        ...prev.pricing,
-        [field]: value
-      }
-    }));
-  };
-
-  const handleGenreChange = (e) => {
-    const options = Array.from(e.target.selectedOptions, option => option.value);
-    setSelectedGenres(options);
-  };
-
-  const handleCategoryChange = (e) => {
-    const options = Array.from(e.target.selectedOptions, option => option.value);
-    setSelectedCategories(options);
-  };
-
   const resetForm = () => {
     setNewMovie({
       title: "",
       description: "",
-      posterImage: null,
-      trailerUrl: "",
-      videoUrl: null,
-      duration: "",
       releaseYear: new Date().getFullYear(),
+      duration: "",
       country: "",
       film_language: "",
-      ageRating: "PG",
-      genres: [],
       director: "",
       cast: "",
       type: "movie",
-      seasons: [],
-      pricing: {
-        buyPrice: 0,
-        isFree: true
-      }
+      ageRating: "PG",
+      "pricing.isFree": true,
+      "pricing.buyPrice": 0
     });
-    setPosterPreview("");
     setSelectedGenres([]);
     setSelectedCategories([]);
+    setPosterFile(null);
+    setTrailerFile(null);
+    setVideoFile(null);
+    setSeasons([]);
   };
 
   const openEditModal = (movie) => {
-    // Підготовка даних для редагування
-    const genreIds = movie.genres.map(g => typeof g === 'object' ? g._id : g);
-    const categoryIds = movie.categories.map(c => typeof c === 'object' ? c._id : c);
+    setEditingMovie({ ...movie });
     
-    setEditingMovie({
-      ...movie,
-      cast: Array.isArray(movie.cast) ? movie.cast.join(', ') : movie.cast || ''
-    });
-    setSelectedGenres(genreIds);
-    setSelectedCategories(categoryIds);
+    // Встановлюємо вибрані жанри
+    if (movie.genres) {
+      setSelectedGenres(movie.genres.map(genre => genre.name));
+    }
+    
+    // Встановлюємо вибрані категорії
+    if (movie.categories) {
+      setSelectedCategories(movie.categories.map(category => category.name));
+    }
+    
+    // Встановлюємо сезони для серіалів
+    if (movie.type === 'series' && movie.seasons) {
+      setSeasons(movie.seasons);
+    } else {
+      setSeasons([]);
+    }
+    
     setShowEditModal(true);
   };
 
-  // Функції для роботи з сезонами та епізодами
-  const addSeason = (setStateFunc) => {
-    setStateFunc(prev => ({
-      ...prev,
-      seasons: [...prev.seasons, {
-        seasonNumber: prev.seasons.length + 1,
-        episodes: []
-      }]
-    }));
+  const handleGenreChange = (e) => {
+    const value = e.target.value;
+    if (value && !selectedGenres.includes(value)) {
+      setSelectedGenres([...selectedGenres, value]);
+    }
   };
 
-  const removeSeason = (index, setStateFunc) => {
-    setStateFunc(prev => {
-      const newSeasons = [...prev.seasons];
-      newSeasons.splice(index, 1);
-      
-      // Перенумеровуємо сезони
-      return {
-        ...prev,
-        seasons: newSeasons.map((season, idx) => ({
-          ...season,
-          seasonNumber: idx + 1
-        }))
-      };
-    });
+  const handleCategoryChange = (e) => {
+    const value = e.target.value;
+    if (value && !selectedCategories.includes(value)) {
+      setSelectedCategories([...selectedCategories, value]);
+    }
   };
 
-  const addEpisode = (seasonIndex, setStateFunc) => {
-    setStateFunc(prev => {
-      const newSeasons = [...prev.seasons];
-      const episodes = newSeasons[seasonIndex].episodes || [];
-      
-      newSeasons[seasonIndex].episodes = [
-        ...episodes,
-        {
-          episodeNumber: episodes.length + 1,
-          title: "",
-          description: "",
-          duration: 0,
-          videoUrl: ""
-        }
-      ];
-      
-      return {
-        ...prev,
-        seasons: newSeasons
-      };
-    });
+  const removeGenre = (genre) => {
+    setSelectedGenres(selectedGenres.filter(g => g !== genre));
   };
 
-  const removeEpisode = (seasonIndex, episodeIndex, setStateFunc) => {
-    setStateFunc(prev => {
-      const newSeasons = [...prev.seasons];
-      const episodes = [...newSeasons[seasonIndex].episodes];
-      
-      episodes.splice(episodeIndex, 1);
-      
-      // Перенумеровуємо епізоди
-      newSeasons[seasonIndex].episodes = episodes.map((episode, idx) => ({
-        ...episode,
-        episodeNumber: idx + 1
-      }));
-      
-      return {
-        ...prev,
-        seasons: newSeasons
-      };
-    });
+  const removeCategory = (category) => {
+    setSelectedCategories(selectedCategories.filter(c => c !== category));
   };
 
-  const updateEpisode = (seasonIndex, episodeIndex, field, value, setStateFunc) => {
-    setStateFunc(prev => {
-      const newSeasons = [...prev.seasons];
-      const episodes = [...newSeasons[seasonIndex].episodes];
-      
-      episodes[episodeIndex] = {
-        ...episodes[episodeIndex],
-        [field]: value
-      };
-      
-      newSeasons[seasonIndex].episodes = episodes;
-      
-      return {
-        ...prev,
-        seasons: newSeasons
-      };
+  const handleFileChange = (e, setFile) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const addSeason = () => {
+    setSeasons([...seasons, { seasonNumber: seasons.length + 1, episodes: [] }]);
+  };
+
+  const removeSeason = (index) => {
+    const newSeasons = [...seasons];
+    newSeasons.splice(index, 1);
+    
+    // Перенумеровуємо сезони
+    newSeasons.forEach((season, idx) => {
+      season.seasonNumber = idx + 1;
     });
+    
+    setSeasons(newSeasons);
+  };
+
+  const addEpisode = (seasonIndex) => {
+    const newSeasons = [...seasons];
+    newSeasons[seasonIndex].episodes.push({
+      episodeNumber: newSeasons[seasonIndex].episodes.length + 1,
+      title: '',
+      description: '',
+      duration: '',
+      videoUrl: ''
+    });
+    setSeasons(newSeasons);
+  };
+
+  const removeEpisode = (seasonIndex, episodeIndex) => {
+    const newSeasons = [...seasons];
+    newSeasons[seasonIndex].episodes.splice(episodeIndex, 1);
+    
+    // Перенумеровуємо епізоди
+    newSeasons[seasonIndex].episodes.forEach((episode, idx) => {
+      episode.episodeNumber = idx + 1;
+    });
+    
+    setSeasons(newSeasons);
+  };
+
+  const handleEpisodeChange = (seasonIndex, episodeIndex, field, value) => {
+    const newSeasons = [...seasons];
+    newSeasons[seasonIndex].episodes[episodeIndex][field] = value;
+    setSeasons(newSeasons);
+  };
+
+  const handleEpisodeFileChange = (seasonIndex, episodeIndex, e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const newSeasons = [...seasons];
+      newSeasons[seasonIndex].episodes[episodeIndex].videoFile = file;
+      newSeasons[seasonIndex].episodes[episodeIndex].videoFileName = file.name;
+      setSeasons(newSeasons);
+    }
   };
 
   const formatDate = (dateString) => {
@@ -506,7 +457,10 @@ export default function Movies() {
           </div>
           
           <button 
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => {
+              resetForm();
+              setShowCreateModal(true);
+            }}
             className="btn btn-success"
           >
             + Додати фільм
@@ -535,13 +489,11 @@ export default function Movies() {
                   {movies.map((movie) => (
                     <tr key={movie._id}>
                       <td>
-                        {movie.posterImage && (
-                          <img 
-                            src={movie.posterImage} 
-                            alt={movie.title}
-                            style={{ width: '50px', height: '75px', objectFit: 'cover', borderRadius: '4px' }}
-                          />
-                        )}
+                        <img 
+                          src={movie.posterImage} 
+                          alt={movie.title}
+                          style={{ width: '50px', height: '75px', objectFit: 'cover', borderRadius: '4px' }}
+                        />
                       </td>
                       <td className="font-weight-bold">{movie.title}</td>
                       <td>
@@ -551,10 +503,12 @@ export default function Movies() {
                       </td>
                       <td>{movie.releaseYear}</td>
                       <td>
-                        <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {movie.genres.map(genre => 
-                            typeof genre === 'object' ? genre.name : genre
-                          ).join(', ')}
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {movie.genres?.map((genre, index) => (
+                            <span key={index} className="badge badge-secondary">
+                              {genre.name}
+                            </span>
+                          ))}
                         </div>
                       </td>
                       <td>
@@ -652,7 +606,7 @@ export default function Movies() {
                   <textarea
                     value={newMovie.description}
                     onChange={(e) => setNewMovie({...newMovie, description: e.target.value})}
-                    rows="3"
+                    rows="4"
                     required
                     className="form-textarea"
                   />
@@ -660,10 +614,15 @@ export default function Movies() {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Тип</label>
+                    <label className="form-label">Тип *</label>
                     <select
                       value={newMovie.type}
-                      onChange={(e) => handleTypeChange(e, setNewMovie)}
+                      onChange={(e) => {
+                        setNewMovie({...newMovie, type: e.target.value});
+                        if (e.target.value !== 'series') {
+                          setSeasons([]);
+                        }
+                      }}
                       className="form-select"
                     >
                       <option value="movie">Фільм</option>
@@ -680,28 +639,6 @@ export default function Movies() {
                       required
                       min="1900"
                       max={new Date().getFullYear()}
-                      className="form-input"
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Країна</label>
-                    <input
-                      type="text"
-                      value={newMovie.country}
-                      onChange={(e) => setNewMovie({...newMovie, country: e.target.value})}
-                      className="form-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Мова</label>
-                    <input
-                      type="text"
-                      value={newMovie.film_language}
-                      onChange={(e) => setNewMovie({...newMovie, film_language: e.target.value})}
                       className="form-input"
                     />
                   </div>
@@ -729,7 +666,7 @@ export default function Movies() {
                       <option value="G">G (без обмежень)</option>
                       <option value="PG">PG (рекомендовано з батьками)</option>
                       <option value="PG-13">PG-13 (від 13 років)</option>
-                      <option value="R">R (до 17 років з дорослими)</option>
+                      <option value="R">R (до 17 з дорослими)</option>
                       <option value="NC-17">NC-17 (від 18 років)</option>
                     </select>
                   </div>
@@ -737,235 +674,264 @@ export default function Movies() {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Жанри *</label>
+                    <label className="form-label">Країна</label>
+                    <input
+                      type="text"
+                      value={newMovie.country}
+                      onChange={(e) => setNewMovie({...newMovie, country: e.target.value})}
+                      className="form-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Мова</label>
+                    <input
+                      type="text"
+                      value={newMovie.film_language}
+                      onChange={(e) => setNewMovie({...newMovie, film_language: e.target.value})}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Режисер</label>
+                  <input
+                    type="text"
+                    value={newMovie.director}
+                    onChange={(e) => setNewMovie({...newMovie, director: e.target.value})}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Актори (через кому)</label>
+                  <input
+                    type="text"
+                    value={newMovie.cast}
+                    onChange={(e) => setNewMovie({...newMovie, cast: e.target.value})}
+                    className="form-input"
+                    placeholder="Актор 1, Актор 2, Актор 3"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Жанри</label>
+                  <div className="form-row">
                     <select
-                      multiple
-                      value={selectedGenres}
                       onChange={handleGenreChange}
                       className="form-select"
-                      style={{ height: '120px' }}
+                      value=""
                     >
+                      <option value="" disabled>Оберіть жанр</option>
                       {genres.map(genre => (
-                        <option key={genre._id} value={genre._id}>
-                          {genre.name}
-                        </option>
+                        <option key={genre._id} value={genre.name}>{genre.name}</option>
                       ))}
                     </select>
-                    <div className="input-hint">Утримуйте Ctrl для вибору декількох жанрів</div>
                   </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Категорії</label>
+                  <div className="selected-items">
+                    {selectedGenres.map(genre => (
+                      <div key={genre} className="selected-item">
+                        <span>{genre}</span>
+                        <button type="button" onClick={() => removeGenre(genre)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Категорії</label>
+                  <div className="form-row">
                     <select
-                      multiple
-                      value={selectedCategories}
                       onChange={handleCategoryChange}
                       className="form-select"
-                      style={{ height: '120px' }}
+                      value=""
                     >
+                      <option value="" disabled>Оберіть категорію</option>
                       {categories.map(category => (
-                        <option key={category._id} value={category._id}>
-                          {category.name} ({category.type})
-                        </option>
+                        <option key={category._id} value={category.name}>{category.name}</option>
                       ))}
                     </select>
-                    <div className="input-hint">Утримуйте Ctrl для вибору декількох категорій</div>
                   </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Режисер</label>
-                    <input
-                      type="text"
-                      value={newMovie.director}
-                      onChange={(e) => setNewMovie({...newMovie, director: e.target.value})}
-                      className="form-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Актори</label>
-                    <input
-                      type="text"
-                      value={newMovie.cast}
-                      onChange={(e) => setNewMovie({...newMovie, cast: e.target.value})}
-                      className="form-input"
-                      placeholder="Через кому: Актор 1, Актор 2, ..."
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Постер *</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, 'posterImage', setNewMovie)}
-                      required
-                      className="form-input"
-                    />
-                    {posterPreview && (
-                      <div style={{ marginTop: '10px' }}>
-                        <img 
-                          src={posterPreview} 
-                          alt="Превью постера" 
-                          style={{ maxWidth: '100px', maxHeight: '150px', objectFit: 'cover' }}
-                        />
+                  <div className="selected-items">
+                    {selectedCategories.map(category => (
+                      <div key={category} className="selected-item">
+                        <span>{category}</span>
+                        <button type="button" onClick={() => removeCategory(category)}>×</button>
                       </div>
-                    )}
+                    ))}
                   </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Трейлер (URL)</label>
-                    <input
-                      type="text"
-                      value={newMovie.trailerUrl}
-                      onChange={(e) => setNewMovie({...newMovie, trailerUrl: e.target.value})}
-                      className="form-input"
-                      placeholder="https://www.youtube.com/watch?v=..."
-                    />
-                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Постер *</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, setPosterFile)}
+                    required
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Трейлер</label>
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => handleFileChange(e, setTrailerFile)}
+                    className="form-input"
+                  />
                 </div>
                 
                 {newMovie.type === 'movie' && (
                   <div className="form-group">
-                    <label className="form-label">Відео файл</label>
+                    <label className="form-label">Відео</label>
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e) => handleFileChange(e, 'videoUrl', setNewMovie)}
+                      onChange={(e) => handleFileChange(e, setVideoFile)}
                       className="form-input"
                     />
-                    <div className="input-hint">Підтримувані формати: MP4, WebM, MOV</div>
                   </div>
                 )}
                 
                 <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Ціна (грн)</label>
-                    <input
-                      type="number"
-                      value={newMovie.pricing.buyPrice}
-                      onChange={(e) => handlePricingChange(e, 'buyPrice', setNewMovie)}
-                      min="0"
-                      step="0.01"
-                      className="form-input"
-                      disabled={newMovie.pricing.isFree}
-                    />
-                  </div>
-                  
                   <div className="form-group checkbox-group">
                     <input
                       type="checkbox"
                       id="isFree"
-                      checked={newMovie.pricing.isFree}
-                      onChange={(e) => handlePricingChange(e, 'isFree', setNewMovie)}
+                      checked={newMovie["pricing.isFree"]}
+                      onChange={(e) => setNewMovie({...newMovie, "pricing.isFree": e.target.checked})}
                     />
                     <label htmlFor="isFree" className="form-label">
                       Безкоштовний доступ
                     </label>
                   </div>
+                  
+                  {!newMovie["pricing.isFree"] && (
+                    <div className="form-group">
+                      <label className="form-label">Ціна (грн)</label>
+                      <input
+                        type="number"
+                        value={newMovie["pricing.buyPrice"]}
+                        onChange={(e) => setNewMovie({...newMovie, "pricing.buyPrice": e.target.value})}
+                        min="0"
+                        step="0.01"
+                        className="form-input"
+                      />
+                    </div>
+                  )}
                 </div>
                 
-                {/* Секція для серіалів */}
+                {/* Секція для сезонів та епізодів (тільки для серіалів) */}
                 {newMovie.type === 'series' && (
                   <div className="series-section">
                     <h3 className="section-title">Сезони та епізоди</h3>
                     
                     <button 
                       type="button" 
-                      className="btn btn-primary add-season-btn"
-                      onClick={() => addSeason(setNewMovie)}
+                      onClick={addSeason}
+                      className="btn btn-secondary add-season-btn"
                     >
                       + Додати сезон
                     </button>
                     
-                    {newMovie.seasons.map((season, seasonIndex) => (
+                    {seasons.map((season, seasonIndex) => (
                       <div key={seasonIndex} className="season-card">
                         <div className="season-header">
                           <h4>Сезон {season.seasonNumber}</h4>
                           <button 
                             type="button" 
+                            onClick={() => removeSeason(seasonIndex)}
                             className="btn btn-danger btn-sm"
-                            onClick={() => removeSeason(seasonIndex, setNewMovie)}
                           >
                             Видалити сезон
                           </button>
                         </div>
                         
                         <div className="episodes-list">
-                          <button 
-                            type="button" 
-                            className="btn btn-secondary add-episode-btn"
-                            onClick={() => addEpisode(seasonIndex, setNewMovie)}
-                          >
-                            + Додати епізод
-                          </button>
-                          
                           {season.episodes.map((episode, episodeIndex) => (
                             <div key={episodeIndex} className="episode-card">
                               <div className="episode-header">
                                 <h5>Епізод {episode.episodeNumber}</h5>
                                 <button 
                                   type="button" 
+                                  onClick={() => removeEpisode(seasonIndex, episodeIndex)}
                                   className="btn btn-danger btn-sm remove-btn"
-                                  onClick={() => removeEpisode(seasonIndex, episodeIndex, setNewMovie)}
                                 >
                                   Видалити
                                 </button>
                               </div>
                               
                               <div className="form-group">
-                                <label className="form-label">Назва епізоду</label>
+                                <label>Назва епізоду</label>
                                 <input
                                   type="text"
                                   value={episode.title}
-                                  onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'title', e.target.value, setNewMovie)}
+                                  onChange={(e) => handleEpisodeChange(seasonIndex, episodeIndex, 'title', e.target.value)}
                                   className="form-input"
-                                  required
+                                  placeholder="Назва епізоду"
                                 />
                               </div>
                               
                               <div className="form-group">
-                                <label className="form-label">Опис</label>
+                                <label>Опис</label>
                                 <textarea
                                   value={episode.description}
-                                  onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'description', e.target.value, setNewMovie)}
+                                  onChange={(e) => handleEpisodeChange(seasonIndex, episodeIndex, 'description', e.target.value)}
                                   className="form-textarea"
+                                  placeholder="Опис епізоду"
                                   rows="2"
                                 />
                               </div>
                               
                               <div className="form-row">
                                 <div className="form-group">
-                                  <label className="form-label">Тривалість (хв)</label>
+                                  <label>Тривалість (хв)</label>
                                   <input
                                     type="number"
                                     value={episode.duration}
-                                    onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'duration', e.target.value, setNewMovie)}
-                                    min="1"
+                                    onChange={(e) => handleEpisodeChange(seasonIndex, episodeIndex, 'duration', e.target.value)}
                                     className="form-input"
+                                    min="1"
                                   />
                                 </div>
                                 
                                 <div className="form-group">
-                                  <label className="form-label">Відео URL</label>
+                                  <label>Відео</label>
                                   <input
-                                    type="text"
-                                    value={episode.videoUrl}
-                                    onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'videoUrl', e.target.value, setNewMovie)}
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(e) => handleEpisodeFileChange(seasonIndex, episodeIndex, e)}
                                     className="form-input"
-                                    placeholder="https://example.com/video.mp4"
                                   />
+                                  {episode.videoFileName && (
+                                    <div className="current-file">
+                                      Обрано: {episode.videoFileName}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           ))}
+                          
+                          <button 
+                            type="button" 
+                            onClick={() => addEpisode(seasonIndex)}
+                            className="btn btn-secondary btn-sm add-episode-btn"
+                          >
+                            + Додати епізод
+                          </button>
                         </div>
                       </div>
                     ))}
+                    
+                    {seasons.length === 0 && (
+                      <div className="input-hint">
+                        Додайте хоча б один сезон для серіалу
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -1018,7 +984,7 @@ export default function Movies() {
                   <textarea
                     value={editingMovie.description}
                     onChange={(e) => setEditingMovie({...editingMovie, description: e.target.value})}
-                    rows="3"
+                    rows="4"
                     required
                     className="form-textarea"
                   />
@@ -1026,10 +992,15 @@ export default function Movies() {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Тип</label>
+                    <label className="form-label">Тип *</label>
                     <select
                       value={editingMovie.type}
-                      onChange={(e) => handleTypeChange(e, setEditingMovie)}
+                      onChange={(e) => {
+                        setEditingMovie({...editingMovie, type: e.target.value});
+                        if (e.target.value !== 'series') {
+                          setSeasons([]);
+                        }
+                      }}
                       className="form-select"
                     >
                       <option value="movie">Фільм</option>
@@ -1046,28 +1017,6 @@ export default function Movies() {
                       required
                       min="1900"
                       max={new Date().getFullYear()}
-                      className="form-input"
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Країна</label>
-                    <input
-                      type="text"
-                      value={editingMovie.country}
-                      onChange={(e) => setEditingMovie({...editingMovie, country: e.target.value})}
-                      className="form-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Мова</label>
-                    <input
-                      type="text"
-                      value={editingMovie.film_language}
-                      onChange={(e) => setEditingMovie({...editingMovie, film_language: e.target.value})}
                       className="form-input"
                     />
                   </div>
@@ -1095,7 +1044,7 @@ export default function Movies() {
                       <option value="G">G (без обмежень)</option>
                       <option value="PG">PG (рекомендовано з батьками)</option>
                       <option value="PG-13">PG-13 (від 13 років)</option>
-                      <option value="R">R (до 17 років з дорослими)</option>
+                      <option value="R">R (до 17 з дорослими)</option>
                       <option value="NC-17">NC-17 (від 18 років)</option>
                     </select>
                   </div>
@@ -1103,240 +1052,308 @@ export default function Movies() {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Жанри *</label>
+                    <label className="form-label">Країна</label>
+                    <input
+                      type="text"
+                      value={editingMovie.country}
+                      onChange={(e) => setEditingMovie({...editingMovie, country: e.target.value})}
+                      className="form-input"
+                    />
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label">Мова</label>
+                    <input
+                      type="text"
+                      value={editingMovie.film_language}
+                      onChange={(e) => setEditingMovie({...editingMovie, film_language: e.target.value})}
+                      className="form-input"
+                    />
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Режисер</label>
+                  <input
+                    type="text"
+                    value={editingMovie.director}
+                    onChange={(e) => setEditingMovie({...editingMovie, director: e.target.value})}
+                    className="form-input"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Актори (через кому)</label>
+                  <input
+                    type="text"
+                    value={Array.isArray(editingMovie.cast) ? editingMovie.cast.join(', ') : editingMovie.cast}
+                    onChange={(e) => setEditingMovie({...editingMovie, cast: e.target.value})}
+                    className="form-input"
+                    placeholder="Актор 1, Актор 2, Актор 3"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Жанри</label>
+                  <div className="form-row">
                     <select
-                      multiple
-                      value={selectedGenres}
                       onChange={handleGenreChange}
                       className="form-select"
-                      style={{ height: '120px' }}
+                      value=""
                     >
+                      <option value="" disabled>Оберіть жанр</option>
                       {genres.map(genre => (
-                        <option key={genre._id} value={genre._id}>
-                          {genre.name}
-                        </option>
+                        <option key={genre._id} value={genre.name}>{genre.name}</option>
                       ))}
                     </select>
-                    <div className="input-hint">Утримуйте Ctrl для вибору декількох жанрів</div>
                   </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Категорії</label>
+                  <div className="selected-items">
+                    {selectedGenres.map(genre => (
+                      <div key={genre} className="selected-item">
+                        <span>{genre}</span>
+                        <button type="button" onClick={() => removeGenre(genre)}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Категорії</label>
+                  <div className="form-row">
                     <select
-                      multiple
-                      value={selectedCategories}
                       onChange={handleCategoryChange}
                       className="form-select"
-                      style={{ height: '120px' }}
+                      value=""
                     >
+                      <option value="" disabled>Оберіть категорію</option>
                       {categories.map(category => (
-                        <option key={category._id} value={category._id}>
-                          {category.name} ({category.type})
-                        </option>
+                        <option key={category._id} value={category.name}>{category.name}</option>
                       ))}
                     </select>
-                    <div className="input-hint">Утримуйте Ctrl для вибору декількох категорій</div>
                   </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Режисер</label>
-                    <input
-                      type="text"
-                      value={editingMovie.director}
-                      onChange={(e) => setEditingMovie({...editingMovie, director: e.target.value})}
-                      className="form-input"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Актори</label>
-                    <input
-                      type="text"
-                      value={editingMovie.cast}
-                      onChange={(e) => setEditingMovie({...editingMovie, cast: e.target.value})}
-                      className="form-input"
-                      placeholder="Через кому: Актор 1, Актор 2, ..."
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Постер</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, 'posterImage', setEditingMovie)}
-                      className="form-input"
-                    />
-                    {editingMovie.posterImage && typeof editingMovie.posterImage === 'string' && (
-                      <div className="current-file">
-                        <span>Поточний постер:</span>
-                        <img 
-                          src={editingMovie.posterImage} 
-                          alt="Поточний постер" 
-                          style={{ maxWidth: '100px', maxHeight: '150px', objectFit: 'cover', marginTop: '8px' }}
-                        />
+                  <div className="selected-items">
+                    {selectedCategories.map(category => (
+                      <div key={category} className="selected-item">
+                        <span>{category}</span>
+                        <button type="button" onClick={() => removeCategory(category)}>×</button>
                       </div>
-                    )}
+                    ))}
                   </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Трейлер (URL)</label>
-                    <input
-                      type="text"
-                      value={editingMovie.trailerUrl}
-                      onChange={(e) => setEditingMovie({...editingMovie, trailerUrl: e.target.value})}
-                      className="form-input"
-                      placeholder="https://www.youtube.com/watch?v=..."
-                    />
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Постер</label>
+                  {editingMovie.posterImage && (
+                    <div className="current-image">
+                      <img 
+                        src={editingMovie.posterImage} 
+                        alt="Current poster" 
+                        style={{ width: '100px', height: '150px', objectFit: 'cover', marginBottom: '10px' }}
+                      />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, setPosterFile)}
+                    className="form-input"
+                  />
+                  <div className="input-hint">
+                    Залиште порожнім, щоб зберегти поточний постер
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Трейлер</label>
+                  {editingMovie.trailerUrl && (
+                    <div className="current-file">
+                      Поточний трейлер: {editingMovie.trailerUrl.split('/').pop()}
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(e) => handleFileChange(e, setTrailerFile)}
+                    className="form-input"
+                  />
+                  <div className="input-hint">
+                    Залиште порожнім, щоб зберегти поточний трейлер
                   </div>
                 </div>
                 
                 {editingMovie.type === 'movie' && (
                   <div className="form-group">
-                    <label className="form-label">Відео файл</label>
+                    <label className="form-label">Відео</label>
+                    {editingMovie.videoUrl && (
+                      <div className="current-file">
+                        Поточне відео: {editingMovie.videoUrl.split('/').pop()}
+                      </div>
+                    )}
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e) => handleFileChange(e, 'videoUrl', setEditingMovie)}
+                      onChange={(e) => handleFileChange(e, setVideoFile)}
                       className="form-input"
                     />
-                    {editingMovie.videoUrl && typeof editingMovie.videoUrl === 'string' && (
-                      <div className="current-file">
-                        <span>Поточне відео: {editingMovie.videoUrl.split('/').pop()}</span>
-                      </div>
-                    )}
-                    <div className="input-hint">Підтримувані формати: MP4, WebM, MOV</div>
+                    <div className="input-hint">
+                      Залиште порожнім, щоб зберегти поточне відео
+                    </div>
                   </div>
                 )}
                 
                 <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Ціна (грн)</label>
-                    <input
-                      type="number"
-                      value={editingMovie.pricing.buyPrice}
-                      onChange={(e) => handlePricingChange(e, 'buyPrice', setEditingMovie)}
-                      min="0"
-                      step="0.01"
-                      className="form-input"
-                      disabled={editingMovie.pricing.isFree}
-                    />
-                  </div>
-                  
                   <div className="form-group checkbox-group">
                     <input
                       type="checkbox"
                       id="editIsFree"
-                      checked={editingMovie.pricing.isFree}
-                      onChange={(e) => handlePricingChange(e, 'isFree', setEditingMovie)}
+                      checked={editingMovie.pricing?.isFree}
+                      onChange={(e) => setEditingMovie({
+                        ...editingMovie, 
+                        pricing: {
+                          ...editingMovie.pricing,
+                          isFree: e.target.checked
+                        }
+                      })}
                     />
                     <label htmlFor="editIsFree" className="form-label">
                       Безкоштовний доступ
                     </label>
                   </div>
+                  
+                  {!editingMovie.pricing?.isFree && (
+                    <div className="form-group">
+                      <label className="form-label">Ціна (грн)</label>
+                      <input
+                        type="number"
+                        value={editingMovie.pricing?.buyPrice}
+                        onChange={(e) => setEditingMovie({
+                          ...editingMovie, 
+                          pricing: {
+                            ...editingMovie.pricing,
+                            buyPrice: e.target.value
+                          }
+                        })}
+                        min="0"
+                        step="0.01"
+                        className="form-input"
+                      />
+                    </div>
+                  )}
                 </div>
                 
-                {/* Секція для серіалів */}
+                {/* Секція для сезонів та епізодів (тільки для серіалів) */}
                 {editingMovie.type === 'series' && (
                   <div className="series-section">
                     <h3 className="section-title">Сезони та епізоди</h3>
                     
                     <button 
                       type="button" 
-                      className="btn btn-primary add-season-btn"
-                      onClick={() => addSeason(setEditingMovie)}
+                      onClick={addSeason}
+                      className="btn btn-secondary add-season-btn"
                     >
                       + Додати сезон
                     </button>
                     
-                    {editingMovie.seasons.map((season, seasonIndex) => (
+                    {seasons.map((season, seasonIndex) => (
                       <div key={seasonIndex} className="season-card">
                         <div className="season-header">
                           <h4>Сезон {season.seasonNumber}</h4>
                           <button 
                             type="button" 
+                            onClick={() => removeSeason(seasonIndex)}
                             className="btn btn-danger btn-sm"
-                            onClick={() => removeSeason(seasonIndex, setEditingMovie)}
                           >
                             Видалити сезон
                           </button>
                         </div>
                         
                         <div className="episodes-list">
-                          <button 
-                            type="button" 
-                            className="btn btn-secondary add-episode-btn"
-                            onClick={() => addEpisode(seasonIndex, setEditingMovie)}
-                          >
-                            + Додати епізод
-                          </button>
-                          
                           {season.episodes.map((episode, episodeIndex) => (
                             <div key={episodeIndex} className="episode-card">
                               <div className="episode-header">
                                 <h5>Епізод {episode.episodeNumber}</h5>
                                 <button 
                                   type="button" 
+                                  onClick={() => removeEpisode(seasonIndex, episodeIndex)}
                                   className="btn btn-danger btn-sm remove-btn"
-                                  onClick={() => removeEpisode(seasonIndex, episodeIndex, setEditingMovie)}
                                 >
                                   Видалити
                                 </button>
                               </div>
                               
                               <div className="form-group">
-                                <label className="form-label">Назва епізоду</label>
+                                <label>Назва епізоду</label>
                                 <input
                                   type="text"
                                   value={episode.title}
-                                  onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'title', e.target.value, setEditingMovie)}
+                                  onChange={(e) => handleEpisodeChange(seasonIndex, episodeIndex, 'title', e.target.value)}
                                   className="form-input"
-                                  required
+                                  placeholder="Назва епізоду"
                                 />
                               </div>
                               
                               <div className="form-group">
-                                <label className="form-label">Опис</label>
+                                <label>Опис</label>
                                 <textarea
                                   value={episode.description}
-                                  onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'description', e.target.value, setEditingMovie)}
+                                  onChange={(e) => handleEpisodeChange(seasonIndex, episodeIndex, 'description', e.target.value)}
                                   className="form-textarea"
+                                  placeholder="Опис епізоду"
                                   rows="2"
                                 />
                               </div>
                               
                               <div className="form-row">
                                 <div className="form-group">
-                                  <label className="form-label">Тривалість (хв)</label>
+                                  <label>Тривалість (хв)</label>
                                   <input
                                     type="number"
                                     value={episode.duration}
-                                    onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'duration', e.target.value, setEditingMovie)}
-                                    min="1"
+                                    onChange={(e) => handleEpisodeChange(seasonIndex, episodeIndex, 'duration', e.target.value)}
                                     className="form-input"
+                                    min="1"
                                   />
                                 </div>
                                 
                                 <div className="form-group">
-                                  <label className="form-label">Відео URL</label>
+                                  <label>Відео</label>
+                                  {episode.videoUrl && (
+                                    <div className="current-file">
+                                      Поточне відео: {episode.videoUrl.split('/').pop()}
+                                    </div>
+                                  )}
                                   <input
-                                    type="text"
-                                    value={episode.videoUrl}
-                                    onChange={(e) => updateEpisode(seasonIndex, episodeIndex, 'videoUrl', e.target.value, setEditingMovie)}
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(e) => handleEpisodeFileChange(seasonIndex, episodeIndex, e)}
                                     className="form-input"
-                                    placeholder="https://example.com/video.mp4"
                                   />
+                                  {episode.videoFileName && (
+                                    <div className="current-file">
+                                      Обрано: {episode.videoFileName}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
                           ))}
+                          
+                          <button 
+                            type="button" 
+                            onClick={() => addEpisode(seasonIndex)}
+                            className="btn btn-secondary btn-sm add-episode-btn"
+                          >
+                            + Додати епізод
+                          </button>
                         </div>
                       </div>
                     ))}
+                    
+                    {seasons.length === 0 && (
+                      <div className="input-hint">
+                        Додайте хоча б один сезон для серіалу
+                      </div>
+                    )}
                   </div>
                 )}
                 
